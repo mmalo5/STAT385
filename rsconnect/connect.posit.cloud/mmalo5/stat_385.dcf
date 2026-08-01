@@ -1,0 +1,12 @@
+name: stat_385
+title: STAT_385
+username: mmalo5
+account: mmalo5
+server: connect.posit.cloud
+hostUrl: https://api.connect.posit.cloud/v1
+appId: 019fbeaf-67d6-5801-c26c-360733619e94
+bundleId:
+url:
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

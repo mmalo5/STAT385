@@ -1,7 +1,10 @@
 library(tidyverse)
 library(shiny)
 library(plotly)
-runner_data <- read_csv("STAT385 Project (2000 to 2025 results).csv")
+#runner_data <- read_csv("STAT385 Project (2000 to 2025 results).csv")
+runner_data <- read_csv(unzip("STAT385 Project (2000 to 2025 results).csv.zip", "STAT385 Project (2000 to 2025 results).csv"))
+
+#weather_data <- read_csv("STAT385 Project (weather working set).csv")
 weather_data <- read_csv("STAT385 Project (weather working set).csv")
 #seed for reproducible sampling
 set.seed(1)
