@@ -305,8 +305,10 @@ bind_rows(yearly_gen, yearly_top1) %>%
   ) 
 #!!!see if there's a way to follow like a log graph or non-linear fit to see what the ideal temp is, also clean up code to make it mine
 
+#new_data <- regression_general_sample_fit
 #extract residuals (the differences between actual and predicted times) to check if your linear regression assumptions hold true.
-augment(regression_general_sample_fit) %>%
+# Extract residuals by explicitly passing the model and the dataset
+augment(regression_general_sample_fit, new_data = final_data) %>%
   ggplot(aes(x = .pred, y = .resid)) +
   geom_point(alpha = 0.2, color = "midnightblue") +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
