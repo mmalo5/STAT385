@@ -1,9 +1,9 @@
----
-title: "Chicago Marathon Analysis"
-author: "Miles Maloney"
-format: html
-server: shiny
----
+#---
+#title: "Chicago Marathon Analysis"
+#author: "Miles Maloney"
+#format: html
+#server: shiny
+#---
   
 #```{r}
 #| label: setup
@@ -88,6 +88,7 @@ weather_story_data <- weather_data %>%
     .groups = "drop"
   ) %>%
   arrange(desc(year))
+weather_story_data
 
 race_story_data <- runner_data %>%
   drop_na(finish_time_seconds) %>%
@@ -109,6 +110,7 @@ race_story_data <- runner_data %>%
   select(year, `Men's Winning (Hrs)`, `Men's Avg (Hrs)`, `Women's Winning (Hrs)`, 
          `Women's Avg (Hrs)`, `Elite Avg (Hrs)`, `Overall Avg (Hrs)`) %>%
   arrange(desc(year))
+race_story_data
 #```
 
 #```{r}
