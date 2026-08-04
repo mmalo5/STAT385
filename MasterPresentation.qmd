@@ -1,0 +1,306 @@
+---
+title: "Chicago Marathon Analysis and the Impact of Weather on Performance"
+author: "Miles Maloney"
+institute: "STAT385"
+date: "August 2, 2026"
+format: 
+  revealjs: 
+    theme: default
+editor: visual
+#note: when hitting Render it does update on http://localhost:7093/#/title-slide
+---
+
+```{r}
+#| label: setup
+#| include: false
+#| message: false
+#| warning: false
+
+library(shiny)
+library(tidyverse)
+library(plotly)
+library(DT)
+library(broom)
+library(leaflet)
+library(sf)
+#data
+gpx_map_2000 <- st_read("2000 Chicago Marathon Route.gpx", layer = "tracks", quiet = TRUE)
+gpx_map_2025 <- st_read("2025 Chicago Marathon Route.gpx", layer = "tracks", quiet = TRUE)
+runner_data <- read_csv("STAT385 Project (2000 to 2025 results).csv")
+weather_data <- read_csv("STAT385 Project (weather working set).csv")
+
+#data wrangling
+set.seed(1)
+runners_finished <- runner_data %>%
+  drop_na(finish_time_seconds) %>%
+  filter(finish_time_seconds <= 23400) %>%
+  group_by(year) %>%
+  mutate(quartile=ntile(finish_time_seconds, 4)) %>%
+  group_by(year, quartile) %>%
+  slice_sample(n = 1000) %>%
+  ungroup()
+
+weather_needed <- weather_data %>%
+  mutate(year = year(time), hour = hour(time))
+
+racing_weather <- weather_needed %>%
+  filter(hour >= 7 & hour <= 15) %>%
+  group_by(year) %>%
+  summarize(
+    avg_race_temp_f = mean(temperature_2m_f, na.rm = TRUE), 
+    avg_humidity_pct = mean(relative_humidity_2m_pct, na.rm = TRUE),
+    total_precip_in = sum(precipitation_inch, na.rm = TRUE),
+    .groups = "drop"
+  )
+final_data <- runners_finished %>%
+  left_join(racing_weather, by = "year")
+top_1percent <- runner_data %>%
+  drop_na(finish_time_seconds) %>%
+  filter(finish_time_seconds <= 23400) %>%
+  group_by(year) %>%
+  mutate(percentile = ntile(finish_time_seconds, 100)) %>%
+  filter(percentile == 1) %>% 
+  ungroup() %>%
+  left_join(racing_weather, by ="year")
+
+spread_data <- bind_rows(
+  final_data %>% mutate(runner_group = "General Sample"),
+  top_1percent %>% mutate(runner_group = "Top 1% Elites")
+)
+
+general_model <- lm(finish_time_seconds ~ avg_race_temp_f, data = final_data)
+elite_model <- lm(finish_time_seconds ~ avg_race_temp_f, data = top_1percent)
+
+general_r2 <- summary(general_model)$adj.r.squared
+elite_r2 <- summary(elite_model)$adj.r.squared
+
+gen_ci <- tidy(general_model, conf.int = TRUE, level = 0.95) %>% filter(term == "avg_race_temp_f")
+elite_ci <- tidy(elite_model, conf.int = TRUE, level = 0.95) %>% filter(term == "avg_race_temp_f")
+
+gen_slope <- gen_ci$estimate
+elite_slope <- elite_ci$estimate  
+
+```
+
+# Motivation
+
+## Why This Topic Matters
+
+::: incremental
+- The Chicago Marathon is one of the largest races in the world.
+- Over 50,000 runners show up to participate in it in recent years.
+- Runners spend months or years training for the Marathon.
+- Weather on the race day is unpredictable.
+- Understanding how runners are sensitive to the temperature conditions helps them set personal goals and helps marathon directors prepare for medical needs during the race.
+:::
+
+## Research Questions
+
+::: incremental
+- Does temperature impact the finish times of runners?
+- Is there a difference in performance due to weather conditions between the General Sample and Elite Runners?
+- Are casual runners or professional runners more sensative to weather changes?
+- Do humidity or precipitation impact perfomance more than temperature?
+:::
+
+# Data Description
+
+## Data Source
+
+- The Marathon results were collected from a reliable public source as a CSV file. It contained results from all runners from 2000-2025, and had over 900,000 finishers.
+- The hourly weather data was collected from Open-Meteo APIs, which provides high-resolution data from national weather services.
+- Every year, the weather data was selected from the race window between 7am and 3pm. 7am was the earliest possible starting time, and 3pm was the latest possible finishing time.
+
+## Variables
+
+- The dependent variable is finish time. It was collected in seconds, but I converted it to hours.
+- The independent variables are from the weather data, which are: Average Temperature (°F), Relative Humidity (%), and Total Precipitation (inches)
+- The categorical variables are gender, age group, runner quartile, and runner group (general sample, top 1% of finishers)
+
+## Data Size
+
+- The raw data from race results was data from over 930,000 finishers across 25 years.\
+- I took a stratified random sample of 1000 random runners in each quartile from each year. This was to make sure that each sample had the same size and to ensure efficiency.
+- The top 1% of runners data from each year was collected and put in a different data set.
+
+## Data Limitations
+
+- Certain runner's heats started at different times.\
+- There is no data on runner's training volume, diet, or potential personal challenges that could impact finish time.
+- The model uses the average of the weather from 7am to 3pm.
+
+# Methods
+
+## Data Cleaning
+
+- Filtered the data by the finishing time, so that all times were less than the Chicago Marathon time limit of 6 hours and 30 minutes (15-minute per mile pace).
+- Removed runners who did not finish the race.
+- Merged the hourly weather averages to the runner results based on `year`.
+
+## Exploratory Analysis
+
+::: incremental
+- The change in marathon course details over the years was very important, so I used geographic data and sf to map out the course.
+- I plotted the overall distribution of the marathon finishing times
+- The distribution of marathon times is a broad bell shape. There are clusters before the finishing times of 3 hours, 4 hours, and 5 hours due to common goals that runners share.\
+:::
+
+## Marathon Finish Time Distribution
+
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 5
+#| fig-width: 10
+ggplot(final_data, aes(x=finish_time_seconds/3600)) + 
+  geom_histogram(aes(y=after_stat(density)), bins=100, color = "gray", fill="lightgray") + 
+  geom_density(color ="blue", linewidth = 1) +
+  labs(
+    title = "Marathon Finish Times Distribution (2000-2025)",
+    x = "Finishing Time (hours)",
+    y = "Density"
+  ) + 
+  theme_minimal()
+```
+
+## Course Map Changes (2000 to 2025)
+
+<p style="margin-top: -5px; font-size: 16px; color: #555;">
+
+Interactive Chicago Marathon Course Map. Feel free to zoom in and select/unselect either year.
+
+```{r}
+#| echo: false
+#| message: false
+leaflet(height = "800px") %>%
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  addPolylines(data = gpx_map_2000, color = "orange", weight = 5, opacity = 0.9, 
+               label = "2000 Course", group = "2000 Course") %>%
+  addPolylines(data = gpx_map_2025, color = "blue", weight = 5, opacity = 0.9, 
+               label = "2025 Course", group = "2025 Course") %>%
+  addLayersControl(
+    overlayGroups = c("2000 Course", "2025 Course"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+```
+
+## Statistical Methods
+
+- Used the linear regression model lm to find the relationship between weather factors and finishing times.
+- Used the broom package to calculate the slopes and R\^2 values.
+
+## Visualizations
+
+- To visualize the trendlines, used ggplot
+- Made interactive visuals with plotly, shiny, and leaflet so the viewer can interact with the data and change what they would like to look at and interact with.
+
+# Key Findings
+
+## Major Insights
+
+## Important Trends
+
+- **General Population Slope:** `r round(gen_slope, 4)` sec/°F (95% CI: `r round(gen_ci$conf.low, 4)`–`r round(gen_ci$conf.high, 4)` sec/°F)
+- **Elite Sample Slope:** `r round(elite_slope, 4)` sec/°F (95% CI: `r round(elite_ci$conf.low, 4)`–`r round(elite_ci$conf.high, 4)` sec/°F)
+- **Quartile Patterns:** Runners from Q2 and Q3 had the highest R\^2 values (Q2: 0.234, Q3: 0.264). The weather conditions had a greater impact on the finishing times of runners from Q2 and Q3 than Q1 and Q4.
+- **Performance Difference:** Elite runners experience a heat penalty ≈3 times less than the general population.
+
+## Supporting Graphics
+
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 5
+yearly_general <- final_data %>%
+  group_by(year) %>%
+  summarize(avg_finish_hours = mean(finish_time_seconds)/3600, avg_temp = mean(avg_race_temp_f), group = "General Runner Sample", .groups="drop")
+
+yearly_top1 <- top_1percent %>%
+  group_by(year) %>%
+  summarize(avg_finish_hours = mean(finish_time_seconds)/3600, avg_temp = mean(avg_race_temp_f), group = "Top 1% Runner Sample", .groups="drop")
+
+plot_data1 <- bind_rows(yearly_general, yearly_top1)
+
+ggplot(plot_data1, aes(x = avg_temp, y = avg_finish_hours, color = group)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1.2) +
+  scale_color_manual(values = c("General Runner Sample" = "steelblue", "Top 1% Runner Sample" = "orange")) +
+  labs(title = "Thermal Sensitivity: General Sample vs. Top 1% Elites",
+       subtitle = paste0("General Adj. R² = ", round(general_r2, 4), " | Elite Adj. R² = ", round(elite_r2, 4)),
+       x = "Average Race Temperature (°F)", y = "Average Finish Time (Hours)", color = "Runner Group") +
+  theme_minimal() + theme(legend.position = "bottom")
+```
+
+## Weather density distribution, finish times across temperature ranges
+
+- Race conditions can be grouped as cold, mild, hot.
+- Density curves show a skew.
+
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 5
+final_data %>%
+  mutate(temp_category = case_when(
+    avg_race_temp_f < 50 ~ "Cold (<50°F)",
+    avg_race_temp_f < 65 & avg_race_temp_f >= 50 ~ "Mild (50-65°F)",
+    TRUE ~ "Warm/Hot (>65°F)"
+  )) %>%
+  ggplot(aes(x = finish_time_seconds/3600, fill = temp_category)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density Distribution Across Temperature Ranges",
+       x = "Finish Time (Hours)", y = "Density", fill = "Conditions") +
+  theme_minimal()
+```
+
+## Quartile Sensitivity Graphic
+
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 4.5
+quartiles <- final_data %>%
+  group_by(year, quartile) %>%
+  summarize(avg_time_hours = mean(finish_time_seconds)/3600, avg_temp = mean(avg_race_temp_f), .groups = "drop")
+
+ggplot(data=quartiles, aes(x=avg_temp, y=avg_time_hours, color=as.factor(quartile))) +
+  geom_point(alpha=0.6, size=2) + 
+  geom_smooth(method="lm", se = FALSE, linewidth=1.2) + 
+  scale_color_manual(values = c("1"="navy", "2"="blue", "3"="skyblue4", "4"="skyblue1"),
+                     labels = c("Q1 (Fastest)", "Q2", "Q3", "Q4 (Slowest)")) +
+  labs(title = "Temperature and Results by Quartile",
+       x = "Average Temperature (°F)", y = "Average Finish Time (Hours)", color = "Quartile") + 
+  theme_minimal()
+```
+
+## Temperature Distribution Graphic
+
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 4.5
+final_data %>%
+  mutate(temp_category = case_when(
+    avg_race_temp_f < 50 ~ "Cold (<50°F)",
+    avg_race_temp_f < 65 & avg_race_temp_f >= 50 ~ "Mild (50-65°F)",
+    TRUE ~ "Warm/Hot (>65°F)"
+  )) %>%
+  ggplot(aes(x = finish_time_seconds/3600, fill = temp_category)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density Distribution Across Temperature Ranges",
+       x = "Finish Time (Hours)", y = "Density", fill = "Conditions") +
+  theme_minimal()
+```
+
+# Conclusions
+
+## Implications
+
+## Recommendations
+
+## \## Future Work
