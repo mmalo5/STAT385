@@ -248,102 +248,227 @@ summary_stats_text <- paste0(
 )
 summary_stats_text
 
-#UI
+# UI - New Dashboard
+ui <- dashboardPage(
+  dashboardHeader(title = "Chicago Marathon Explorer"),
 
-ui <- navbarPage(
-  title = "Chicago Marathon Explorer",
-  tabPanel("Overview",
-           div(style = "padding: 30px;",
-               h3("Welcome to the Chicago Marathon Dashboard"),
-               p("This project analyzes the impact of weather on runner performance spanning from 2000 through 2025.")
-           )
+  # Sidebar Navigation - icons are from FontAwesome: https://fontawesome.com/
+  dashboardSidebar(
+    sidebarMenu(
+      id = "sidebar",
+      menuItem("Overview", tabName = "overview", icon = icon("list")),
+      menuItem("Data Explorer", 
+        icon = icon("compass"),
+        menuSubItem("Weather Story", tabName = "weather_story"),
+        menuSubItem("Race Story", tabName = "race_story")
+      ),
+      menuItem("Results/Findings", tabName = "results", icon = icon("chart-simple")),
+      menuItem("Course Map", tabName = "map", icon = icon("map")),
+      menuItem("About", tabName = "about", icon = icon("circle-info"))
+    )
   ),
-  
-  tabPanel("Data Explorer",
-           navlistPanel("Stories",
-                        tabPanel("Weather Story",
-                                 div(style = "padding: 20px;",
-                                     h3("Marathon Weather Conditions 2000-2025"),
-                                     p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
-                                     DTOutput("weather_table")
-                                 )
-                        ),
-                        tabPanel("Race Story",
-                                 div(style = "padding: 20px;",
-                                     h3("Marathon Finish Time Records & Cohort Story"),
-                                     p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
-                                     DTOutput("race_table")
-                                 )
-                        )
-           )
-  ),
-  
-  tabPanel("Results/Findings",
-           sidebarLayout(
-             sidebarPanel(
-               h4("Controls & Filters"),
-               selectInput("group", "Choose Runner Group:",
-                           choices = list("General Sample", "Top 1% Elites")),
-               selectInput("weather_metric", "Select Weather Factor:",
-                           choices = list("Temperature (°F)" = "avg_race_temp_f",
-                                          "Relative Humidity (%)" = "avg_humidity_pct",
-                                          "Precipitation (in)" = "total_precip_in"),
-                           selected = "avg_race_temp_f"),
-               sliderInput("year_range", "Select Year Range:",
-                           min = 2000, max = 2025, value = c(2000, 2025), sep = "")
-             ),
-             mainPanel(
-               plotlyOutput("scatter_plot_1"),
-               br(),
-               h4("Weather Impact on Marathon"),
-               p("This scatter plot shows how weather factors impact marathon finishing times"),
-               tableOutput("summary_table_1")
-             )
-           ),
-           hr(),
-           sidebarLayout(
-             sidebarPanel(
-               selectInput("quartile_choice", "Choose Runner Quartile:",
-                           choices = list("Q1 (Fastest)" = 1, "Q2 (Average)" = 2,
-                                          "Q3 (Average)" = 3, "Q4 (Slowest)" = 4))
-             ),
-             mainPanel(
-               plotlyOutput("scatter_plot_2"),
-               br(),
-               tableOutput("summary_table_2")
-             )
-           ),
-           hr(), 
-           h3("Cohort & Demographic Comparisons"),
-           fluidRow(
-             column(6, plotlyOutput("elites_vs_general_plot")),
-             column(6, plotlyOutput("men_vs_women_plot"))
-           ),
-           br(),
-           fluidRow(
-             column(6, plotlyOutput("elite_men_vs_women_plot"))
-           ),
-           plotOutput("percentile_plot")
-  ),
-  
-  tabPanel("Course Map Comparison",
-           div(style = "padding: 20px;",
-               h3("Interactive Route Evolution: 2000 vs. 2025"),
-               p("Toggle routes on and off with the checkboxes"),
-               leafletOutput("course_map", height = 600)
-           )
-  ),
-  
-  tabPanel("About the Project",
-           div(style = "padding: 30px;",
-               h3("Methodology and Data Processing"),
-               p("Data was sourced from official Chicago Marathon results and hourly Open-Meteo weather APIs from 2000–2025."),
-               br(),
-               h4("The 2007 Heat"),
-               p("Note about the 2007 Chicago Marathon: Temperature spiked mid race at over 88°F which forced race organizers to stop the race early. Many runners suffered from heat stroke and one runner died.")
-           )
+
+#  Body Contents
+  dashboardBody(
+    tabItems(
+      # Overview Page
+      tabItem(tabName = "overview",
+        h2("Welcome to the Chicago Marathon Dashboard"),
+        p("This project analyzes the impact of weather on runner performance spanning from 2000 through 2025.")
+      ),
+
+      # Data/Weather Story Page
+      tabItem(tabName = "weather_story",
+        h2("Weather Story"),
+        p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
+        DTOutput("weather_table")
+      ),
+
+      # Data/Race Story Page
+      tabItem(tabName = "race_story",
+        h2("Race Story"),
+        p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
+        DTOutput("race_table")
+      ),
+
+      # Results/Findings Page
+      tabItem(tabName = "results",
+        # Yearly Performance
+        fluidRow(
+          column(width = 3,
+            box(
+              title = "Controls & Filters",
+              status = "primary",
+              width = 12,
+              selectInput("group", "Choose Runner Group:",
+                choices = list("General Sample", "Top 1% Elites")),
+              selectInput("weather_metric", "Select Weather Factor:",
+                choices = list("Temperature (°F)" = "avg_race_temp_f",
+                              "Relative Humidity (%)" = "avg_humidity_pct",
+                              "Precipitation (in)" = "total_precip_in"),
+                selected = "avg_race_temp_f"),
+              sliderInput("year_range", "Select Year Range:",
+                min = 2000, max = 2025, value = c(2000, 2025), sep = "")
+            )
+          ),
+          column(width = 9,
+            plotlyOutput("scatter_plot_1"),
+            br(),
+            h4("Weather Impact on Marathon"),
+            p("This scatter plot shows how weather factors impact marathon finishing times"),
+            tableOutput("summary_table_1")
+          )
+        ),
+
+        fluidRow(
+          column(width = 3,
+            box(
+              title = "Controls & Filters",
+              status = "primary",
+              width = 12,
+              selectInput("quartile_choice", "Choose Runner Quartile:",
+                choices = list("Q1 (Fastest)" = 1, "Q2 (Average)" = 2,
+                              "Q3 (Average)" = 3, "Q4 (Slowest)" = 4))
+            )
+          ),
+          column(width = 9,
+            plotlyOutput("scatter_plot_2"),
+            br(),
+            tableOutput("summary_table_2")
+          )
+        ),
+
+        # Demographic Charts
+        br(),
+        h3("Cohort & Demographic Comparisons"),
+        plotlyOutput("elites_vs_general_plot"),
+        br(),
+        plotlyOutput("men_vs_women_plot"),
+        br(),
+        plotlyOutput("elite_men_vs_women_plot"),
+
+        # Distribution Chart
+        br(),
+        h3("Distributions"),
+        plotOutput("percentile_plot")
+      ),
+
+      # Race Map Page
+      tabItem(tabName = "map",
+        h2("Course Map Comparison"),
+        h3("Interactive Route Evolution: 2000 vs. 2025"),
+        leafletOutput("course_map", height = 600)
+      ),
+
+      # About Page
+      tabItem(tabName = "about",
+        h2("About the Project"),
+        h3("Methodology and Data Processing"),
+        p("Data was sourced from official Chicago Marathon results and hourly Open-Meteo weather APIs from 2000–2025."),
+        br(),
+        h4("The 2007 Heat"),
+        p("Note about the 2007 Chicago Marathon: Temperature spiked mid race at over 88°F which forced race organizers to stop the race early. Many runners suffered from heat stroke and one runner died.")
+      )
+    )
   )
 )
+
+#UI
+
+# ui <- navbarPage(
+#   title = "Chicago Marathon Explorer",
+#   tabPanel("Overview",
+#            div(style = "padding: 30px;",
+#                h3("Welcome to the Chicago Marathon Dashboard"),
+#                p("This project analyzes the impact of weather on runner performance spanning from 2000 through 2025.")
+#            )
+#   ),
+  
+#   tabPanel("Data Explorer",
+#            navlistPanel("Stories",
+#                         tabPanel("Weather Story",
+#                                  div(style = "padding: 20px;",
+#                                      h3("Marathon Weather Conditions 2000-2025"),
+#                                      p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
+#                                      DTOutput("weather_table")
+#                                  )
+#                         ),
+#                         tabPanel("Race Story",
+#                                  div(style = "padding: 20px;",
+#                                      h3("Marathon Finish Time Records & Cohort Story"),
+#                                      p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
+#                                      DTOutput("race_table")
+#                                  )
+#                         )
+#            )
+#   ),
+  
+#   tabPanel("Results/Findings",
+#            sidebarLayout(
+#              sidebarPanel(
+#                h4("Controls & Filters"),
+#                selectInput("group", "Choose Runner Group:",
+#                            choices = list("General Sample", "Top 1% Elites")),
+#                selectInput("weather_metric", "Select Weather Factor:",
+#                            choices = list("Temperature (°F)" = "avg_race_temp_f",
+#                                           "Relative Humidity (%)" = "avg_humidity_pct",
+#                                           "Precipitation (in)" = "total_precip_in"),
+#                            selected = "avg_race_temp_f"),
+#                sliderInput("year_range", "Select Year Range:",
+#                            min = 2000, max = 2025, value = c(2000, 2025), sep = "")
+#              ),
+#              mainPanel(
+#                plotlyOutput("scatter_plot_1"),
+#                br(),
+#                h4("Weather Impact on Marathon"),
+#                p("This scatter plot shows how weather factors impact marathon finishing times"),
+#                tableOutput("summary_table_1")
+#              )
+#            ),
+#            hr(),
+#            sidebarLayout(
+#              sidebarPanel(
+#                selectInput("quartile_choice", "Choose Runner Quartile:",
+#                            choices = list("Q1 (Fastest)" = 1, "Q2 (Average)" = 2,
+#                                           "Q3 (Average)" = 3, "Q4 (Slowest)" = 4))
+#              ),
+#              mainPanel(
+#                plotlyOutput("scatter_plot_2"),
+#                br(),
+#                tableOutput("summary_table_2")
+#              )
+#            ),
+#            hr(), 
+#            h3("Cohort & Demographic Comparisons"),
+#            fluidRow(
+#              column(6, plotlyOutput("elites_vs_general_plot")),
+#              column(6, plotlyOutput("men_vs_women_plot"))
+#            ),
+#            br(),
+#            fluidRow(
+#              column(6, plotlyOutput("elite_men_vs_women_plot"))
+#            ),
+#            plotOutput("percentile_plot")
+#   ),
+  
+#   tabPanel("Course Map Comparison",
+#            div(style = "padding: 20px;",
+#                h3("Interactive Route Evolution: 2000 vs. 2025"),
+#                p("Toggle routes on and off with the checkboxes"),
+#                leafletOutput("course_map", height = 600)
+#            )
+#   ),
+  
+#   tabPanel("About the Project",
+#            div(style = "padding: 30px;",
+#                h3("Methodology and Data Processing"),
+#                p("Data was sourced from official Chicago Marathon results and hourly Open-Meteo weather APIs from 2000–2025."),
+#                br(),
+#                h4("The 2007 Heat"),
+#                p("Note about the 2007 Chicago Marathon: Temperature spiked mid race at over 88°F which forced race organizers to stop the race early. Many runners suffered from heat stroke and one runner died.")
+#            )
+#   )
+# )
 
 #SERVER
 
