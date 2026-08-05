@@ -1,6 +1,8 @@
 library(shiny)
 library(tidyverse)
+library(tidymodels)
 library(plotly)
+library(shinydashboard)
 library(DT)
 library(broom)
 library(leaflet)
@@ -39,6 +41,7 @@ racing_weather <- weather_needed %>%
   group_by(year) %>%
   summarize(
     avg_race_temp_f = mean(temperature_2m_f, na.rm = TRUE),
+    avg_apparent_temp_f = mean(apparent_temperature_f, na.rm = TRUE),
     avg_humidity_pct = mean(relative_humidity_2m_pct, na.rm = TRUE),
     total_precip_in = sum(precipitation_inch, na.rm = TRUE),
     .groups = "drop"
@@ -69,6 +72,7 @@ gender_yearly <- final_data %>%
   summarize(
     avg_time_hours = mean(finish_time_seconds) / 3600,
     avg_temp = mean(avg_race_temp_f, na.rm = TRUE),
+    avg_apparent_temp = mean(avg_apparent_temp_f, na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -80,6 +84,7 @@ elite_gender_yearly <- top_1percent %>%
   summarize(
     avg_time_hours = mean(finish_time_seconds) / 3600,
     avg_temp = mean(avg_race_temp_f, na.rm = TRUE),
+    avg_apparent_temp = mean(avg_apparent_temp_f, na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -89,6 +94,7 @@ weather_story_data <- weather_data %>%
   group_by(year) %>%
   summarize(
     `Average Temperature (°F)` = round(mean(temperature_2m_f, na.rm = TRUE), 1),
+    `Average Feels-Like Temp (°F)` = round(mean(apparent_temperature_f, na.rm = TRUE), 1),
     `8am Start Temperature (°F)` = round(mean(temperature_2m_f[hour == 8], na.rm = TRUE), 1),
     `11am Middle Temperature (°F)` = round(mean(temperature_2m_f[hour == 11], na.rm = TRUE), 1),
     `2pm End Temperature (°F)` = round(mean(temperature_2m_f[hour == 14], na.rm = TRUE), 1),
