@@ -188,6 +188,48 @@ without_2007_data <- final_data %>% filter(year != 2007) %>% group_by(year) %>% 
 without_2007_model <- lm(time ~ temp, data = without_2007_data)
 print(summary(without_2007_model))
 
+#2007 comparison
+compare2007 <- final_data %>%
+  mutate(is_2007 = ifelse(year == 2007, "2007", "Normal Years")) %>%
+  group_by(is_2007) %>%
+  summarize(
+    avg_finish_hours = mean(finish_time_seconds, na.rm = TRUE)/3600,
+    avg_temp_f = mean(avg_race_temp_f, na.rm = TRUE),
+    runner_count = n()
+  )
+print(compare2007)
+#statistical tests to compare 2007 and others years
+test2007_data <- final_data %>%
+  mutate(is_2007 = ifelse(year == 2007, "2007 Heat", "Normal Years"))
+#welch's t-test
+t_test_result <- t.test(finish_time_seconds~is_2007, data=test2007_data)
+print("Welch's t-test for mean finish times")
+print(t_test_result)
+#variance test
+var_test_result <- var.test(finish_time_seconds~is_2007, data=test2007_data)
+print("Variance test for finish time variances")
+print(var_test_result)
+
+compare_2007_elites <- spread_data %>%
+  filter(year == 2007) %>%
+  group_by(runner_group) %>%
+  summarize(
+    avg_finish_hours = mean(finish_time_seconds, na.rm = TRUE) / 3600,
+    avg_temp_f = mean(avg_race_temp_f, na.rm = TRUE),
+    runner_count = n(),
+    .groups = "drop"
+  )
+print(compare_2007_elites)
+
+true_temp_model <- lm(avg_time_hours ~ avg_temp, data = final_data %>% group_by(year) %>% summarize(avg_time_hours = mean(finish_time_seconds)/3600, avg_temp = mean(avg_race_temp_f)))
+apparent_temp_model <- lm(avg_time_hours ~ avg_apparent_temp, data = final_data %>% group_by(year) %>% summarize(avg_time_hours = mean(finish_time_seconds)/3600, avg_apparent_temp = mean(avg_apparent_temp_f)))
+
+print("Temperature model summary")
+print(summary(true_temp_model))
+
+print("Apparent Temperature model summary")
+print(summary(apparent_temp_model))
+
 #difference in p-values
 gender_diff_model <- lm(avg_time_hours ~ avg_temp*gender, data=gender_yearly)
 print(summary(gender_diff_model))
