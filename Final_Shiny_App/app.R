@@ -10,7 +10,7 @@ library(sf)
 
 #GLOBAL
 
-runner_data <- read_csv("STAT385 Project (2000 to 2025 results).csv")
+runner_data <- read_csv(unzip("STAT385 Project (2000 to 2025 results).csv.zip", "STAT385 Project (2000 to 2025 results).csv"))
 weather_data <- read_csv("STAT385 Project (weather working set).csv")
 gpx_map_2000 <- st_read("2000 Chicago Marathon Route.gpx", layer = "tracks", quiet = TRUE)
 gpx_map_2025 <- st_read("2025 Chicago Marathon Route.gpx", layer = "tracks", quiet = TRUE)
