@@ -5050,12 +5050,7 @@
         "Repository": "CRAN",
         "Date/Publication": "2026-06-19 15:10:02 UTC",
         "Built": "R 4.5.2; aarch64-apple-darwin20; 2026-06-19 15:18:11 UTC; unix",
-        "Archs": "terra.so.dSYM",
-        "RemoteType": "standard",
-        "RemotePkgRef": "terra",
-        "RemoteRef": "terra",
-        "RemoteRepos": "https://cran.rstudio.com",
-        "RemoteSha.Version": "1.9-34"
+        "Archs": "terra.so.dSYM"
       }
     },
     "textshaping": {
