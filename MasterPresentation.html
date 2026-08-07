@@ -10,7 +10,7 @@
   <meta name="generator" content="quarto-1.9.38">
 
   <meta name="author" content="Miles Maloney">
-  <meta name="dcterms.date" content="2026-08-06">
+  <meta name="dcterms.date" content="2026-08-07">
   <title>Chicago Marathon Analysis and the Impact of Weather on Performance</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -155,7 +155,7 @@ Miles Maloney
     </div>
 </div>
 
-  <p class="date">2026-08-06</p>
+  <p class="date">2026-08-07</p>
 </section>
 <section>
 <section id="motivation" class="title-slide slide level1 center">
@@ -166,7 +166,8 @@ Miles Maloney
 <h2>Why This Topic Matters</h2>
 <ul>
 <li class="fragment">The Chicago Marathon is one of the largest races in the world.</li>
-<li class="fragment">Over 50,000 runners show up to participate in it in recent years.</li>
+<li class="fragment">It is consistently held annually on the second Sunday of October.</li>
+<li class="fragment">Over 50,000 runners participate in it in recent years.</li>
 <li class="fragment">Runners spend months or years training for the Marathon.</li>
 <li class="fragment">Weather on the race day is unpredictable.</li>
 <li class="fragment">Understanding how runners are sensitive to the temperature conditions helps them set personal goals and helps marathon directors prepare for medical needs during the race.</li>
@@ -260,7 +261,7 @@ Miles Maloney
 <section id="marathon-finish-time-distribution" class="slide level2">
 <h2>Marathon Finish Time Distribution</h2>
 
-<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-1-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"><div style="font-size: 75%;">
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-2-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"><div style="font-size: 75%;">
 <ul>
 <li>This marathon finishing time distribution density plot is moderately right skewed.</li>
 <li>The majority of runners finish within a time range of 4 to 5 hours.</li>
@@ -281,23 +282,72 @@ Miles Maloney
 <h2>Statistical Methods</h2>
 <ul>
 <li>I used the linear regression model lm to find the relationship between weather factors and finishing times.</li>
-<li>I used the broom package to calculate the slopes and R^2 values.</li>
-</ul>
-</section>
-<section id="visualizations" class="slide level2">
-<h2>Visualizations</h2>
-<ul>
-<li>To visualize the trendlines, used ggplot</li>
-<li>Made interactive visuals with plotly, shiny, and leaflet so the viewer can interact with the data and change what they would like to look at and interact with.</li>
+<li>I used the broom package to calculate the slopes and R^2 values. #| eval: false # Regression model fitting code general_model &lt;- lm(finish_time_seconds ~ avg_race_temp_f, data = final_data)</li>
 </ul>
 </section></section>
+<section>
+<section id="visualizations" class="title-slide slide level1 center">
+<h1>Visualizations</h1>
+
+</section>
+<section id="thermal-sensitivity" class="slide level2">
+<h2>Thermal Sensitivity</h2>
+<p>This plot illustrates the contrast in heat sensitivity between the general runner sample and the top 1% elite runners. This shows how temperature changes impact finish times across different skill levels.</p>
+
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-4-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="weather-density-distribution" class="slide level2">
+<h2>Weather Density Distribution</h2>
+<p>This density plot shows how the distribution of finish times shift under different weather conditions, categorized as cold, mild, and hot.</p>
+
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-5-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="quartile-sensitivity" class="slide level2">
+<h2>Quartile Sensitivity</h2>
+<p>This visualization shows how weather impacts runners differently depending on which performance quartile they are in.</p>
+
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-6-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section></section>
 <section>
 <section id="key-findings" class="title-slide slide level1 center">
 <h1>Key Findings</h1>
 
 </section>
+<section id="heat-vs.-other-weather-elements" class="slide level2">
+<h2>1. Heat Vs. Other Weather Elements</h2>
+<ul>
+<li><strong>Finding:</strong> Heat impacts runners in the Chicago Marathon more than any other weather element.</li>
+<li><strong>Proof:</strong> Regression models confirm that apparent temperature and temperature explain a greater proportion of finish time variance (<span class="math inline">\(R^2 \approx 0.50\)</span> to <span class="math inline">\(0.53\)</span>) compared to relative humidity. There was only 1 race with notable precipitation, and it was only 0.21 inches, so I would need more data to come to any conclusions.</li>
+</ul>
+
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-7-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="finish-time-per-degree" class="slide level2">
+<h2>2. Finish Time per Degree</h2>
+<ul>
+<li><strong>Finding:</strong> For every 1°F increase in temperature, an average of 1.421045^{5} seconds (39.4735 hours) are added to a general runner’s finish time.</li>
+<li><strong>Proof:</strong> The linear regression slope coefficient from the general sample model shows what impact temperature has on the general marathon runner.</li>
+</ul>
+
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-8-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="running-groups-impacted-by-heat" class="slide level2">
+<h2>3. Running Groups Impacted by Heat</h2>
+<ul>
+<li><strong>Major Insight:</strong> Runners in the middle of the pack in quartiles 2 and 3 are impacted the most by heat.</li>
+<li><strong>Proof:</strong> Quartiles 2 and 3 show higher individual <span class="math inline">\(R^2\)</span> values (Q2: 0.234, Q3: 0.264) than elites or the slowest quartile, which shows that their marathon performance is impacted the most by thermal stress.</li>
+</ul>
+
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-9-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<section id="ideal-racing-conditions" class="slide level2">
+<h2>4. Ideal Racing Conditions</h2>
+<ul>
+<li><strong>Major Insight:</strong> The ideal racing conditions for the Chicago Marathon are in the 50-65°F temperature bracket.</li>
+<li><strong>Proof:</strong> Density distributions across temperature ranges show that the marathon finish times are clustered tighter than other temperature ranges and they skew significantly faster compared the spikes with hotter weather.</li>
+</ul>
+
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-10-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
 <section id="major-insights" class="slide level2">
 <h2>Major Insights</h2>
+<ul>
+<li>Temperature: Heat impacts runners more than any other weather element. It has a stronger relationship with finish time variance than precipitation or humidity.</li>
+<li>For every 1°F increase in temperature, an average of 39.47 seconds are added to a general runner’s finish time.</li>
+</ul>
 </section>
 <section id="important-trends" class="slide level2">
 <h2>Important Trends</h2>
@@ -311,7 +361,7 @@ Miles Maloney
 <section id="supporting-graphics" class="slide level2">
 <h2>Supporting Graphics</h2>
 
-<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-3-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-11-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
 <section id="weather-density-distribution-finish-times-across-temperature-ranges" class="slide level2">
 <h2>Weather density distribution, finish times across temperature ranges</h2>
 <ul>
@@ -319,15 +369,15 @@ Miles Maloney
 <li>Density curves show a skew.</li>
 </ul>
 
-<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-4-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-12-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
 <section id="quartile-sensitivity-graphic" class="slide level2">
 <h2>Quartile Sensitivity Graphic</h2>
 
-<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-5-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-13-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section>
 <section id="temperature-distribution-graphic" class="slide level2">
 <h2>Temperature Distribution Graphic</h2>
 
-<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-6-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section></section>
+<img data-src="MasterPresentation_files/figure-revealjs/unnamed-chunk-14-1.png" class="quarto-figure quarto-figure-center r-stretch" width="960"></section></section>
 <section>
 <section id="conclusions" class="title-slide slide level1 center">
 <h1>Conclusions</h1>
@@ -356,6 +406,7 @@ Miles Maloney
 <li class="fragment"><strong>Training:</strong> A sample of the preparation and training each runner did ahead of the race would be valuable.<br>
 </li>
 <li class="fragment"><strong>Splits:</strong> Taking splits every mile or so would be beneficial to analyze how different groups respond to general fatigue. These splits could also factor in the weather conditions during different parts of the race.</li>
+<li class="fragment">Would it be beneficial to move the marathon to a different day of the year to make it more likely that the weather conditions are closer to the ideal race temperature?</li>
 </ul>
 
 </section></section>

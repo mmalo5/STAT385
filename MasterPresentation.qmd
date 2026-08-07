@@ -2,7 +2,7 @@
 title: "Chicago Marathon Analysis and the Impact of Weather on Performance"
 author: "Miles Maloney"
 institute: "STAT385"
-date: "August 6, 2026"
+date: "August 7, 2026"
 format: 
   revealjs: 
     theme: default
@@ -90,7 +90,8 @@ elite_slope <- elite_ci$estimate
 
 ::: incremental
 - The Chicago Marathon is one of the largest races in the world.
-- Over 50,000 runners show up to participate in it in recent years.
+- It is consistently held annually on the second Sunday of October.
+- Over 50,000 runners participate in it in recent years.
 - Runners spend months or years training for the Marathon.
 - Weather on the race day is unpredictable.
 - Understanding how runners are sensitive to the temperature conditions helps them set personal goals and helps marathon directors prepare for medical needs during the race.
@@ -143,10 +144,16 @@ elite_slope <- elite_ci$estimate
 # Methods
 
 ## Data Cleaning
-
 - Filtered the data by the finishing time, so that all times were less than the Chicago Marathon time limit of 6 hours and 30 minutes (15-minute per mile pace).
 - Removed runners who did not finish the race.
 - Merged the hourly weather averages to the runner results based on year and start time of different groups.
+```{r}
+#| eval: false
+# Example of filtering and data cleaning logic:
+runners_finished <- runner_data %>%
+  drop_na(finish_time_seconds) %>%
+  filter(finish_time_seconds <= 23400)
+```
 
 ## Exploratory Analysis
 
@@ -207,18 +214,151 @@ leaflet(height = "420px", width = "100%") %>%
 
 - I used the linear regression model lm to find the relationship between weather factors and finishing times.
 - I used the broom package to calculate the slopes and R\^2 values.
+#| eval: false
+# Regression model fitting code
+general_model <- lm(finish_time_seconds ~ avg_race_temp_f, 
+                    data = final_data)
+                    
+# Visualizations
 
-## Visualizations
+## Thermal Sensitivity
+This plot illustrates the contrast in heat sensitivity between the general runner sample and the top 1% elite runners. This shows how temperature changes impact finish times across different skill levels.
 
-- To visualize the trendlines, used ggplot
-- Made interactive visuals with plotly, shiny, and leaflet so the viewer can interact with the data and change what they would like to look at and interact with.
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 4.5
+yearly_general <- final_data %>%
+  group_by(year) %>%
+  summarize(avg_finish_hours = mean(finish_time_seconds)/3600, avg_temp = mean(avg_race_temp_f), group = "General Runner Sample", .groups="drop")
+yearly_top1 <- top_1percent %>%
+  group_by(year) %>%
+  summarize(avg_finish_hours = mean(finish_time_seconds)/3600, avg_temp = mean(avg_race_temp_f), group = "Top 1% Runner Sample", .groups="drop")
+plot_data1 <- bind_rows(yearly_general, yearly_top1)
+
+ggplot(plot_data1, aes(x = avg_temp, y = avg_finish_hours, color = group)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1.2) +
+  scale_color_manual(values = c("General Runner Sample" = "steelblue", "Top 1% Runner Sample" = "orange")) +
+  labs(title = "Thermal Sensitivity: General Sample vs. Top 1% Elites",
+       x = "Average Race Temperature (°F)", y = "Average Finish Time (Hours)", color = "Runner Group") +
+  theme_minimal() + theme(legend.position = "bottom")
+```
+
+## Weather Density Distribution
+This density plot shows how the distribution of finish times shift under different weather conditions, categorized as cold, mild, and hot.
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 4.5
+final_data %>%
+  mutate(temp_category = case_when(avg_race_temp_f < 50 ~ "Cold", 
+                                   avg_race_temp_f < 65 ~ "Mild", 
+                                   TRUE ~ "Hot")) %>%
+  ggplot(aes(x = finish_time_seconds/3600, fill = temp_category)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Finish Time Density by Conditions", x = "Hours", y = "Density", fill = "Conditions") + theme_minimal()
+
+```
+
+## Quartile Sensitivity
+This visualization shows how weather impacts runners differently depending on which performance quartile they are in.
+```{r}
+#| echo: false
+#| fig-align: "center"
+#| fig-height: 4.5
+quartiles <- final_data %>%
+  group_by(year, quartile) %>%
+  summarize(avg_time_hours = mean(finish_time_seconds)/3600, avg_temp = mean(avg_race_temp_f), .groups = "drop")
+ggplot(data=quartiles, aes(x=avg_temp, y=avg_time_hours, color=as.factor(quartile))) +
+  geom_point() + geom_smooth(method="lm", se=FALSE) + scale_color_manual(values = c("1"="navy", "2"="blue", "3"="skyblue4", "4"="skyblue1"),
+  labels = c("Q1 (Fastest)", "Q2", "Q3", "Q4 (Slowest)")) +
+  labs(title = "Sensitivity by Performance Quartile", x = "Avg Temp (°F)", y = "Average Finish Time (Hours)", color = "Quartile") + theme_minimal()
+
+```
 
 # Key Findings
 
+## 1. Heat Vs. Other Weather Elements
+- **Finding:** Heat impacts runners in the Chicago Marathon more than any other weather element.
+- **Proof:** Regression models confirm that apparent temperature and temperature explain a greater proportion of finish time variance ($R^2 \approx 0.50$ to $0.53$) compared to relative humidity. There was only 1 race with notable precipitation, and it was only 0.21 inches, so I would need more data to come to any conclusions.
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 4
+ggplot(plot_data1 %>% filter(group == "General Runner Sample"), aes(x = avg_temp, y = avg_finish_hours)) +
+  geom_point(size = 2.5, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 1) +
+  labs(title = "General Sample Finish Times vs. Temperature",
+       x = "Average Temperature (°F)", y = "Finish Time (Hours)") +
+  theme_minimal()
+```
+
+## 2. Finish Time per Degree
+- **Finding:** For every 1°F increase in temperature, an average of `r round(gen_slope * 3600, 1)` seconds (`r round(gen_slope, 4)` hours) are added to a general runner's finish time.
+- **Proof:** The linear regression slope coefficient from the general sample model shows what impact temperature has on the general marathon runner. 
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 4
+ggplot(plot_data1, aes(x = avg_temp, y = avg_finish_hours, color = group)) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
+  scale_color_manual(values = c("General Runner Sample" = "steelblue", "Top 1% Runner Sample" = "orange")) +
+  labs(title = "Thermal Sensitivity Slopes",
+       x = "Average Temperature (°F)", y = "Finish Time (Hours)", color = "Group") +
+  theme_minimal() + theme(legend.position = "bottom")
+```
+
+## 3. Running Groups Impacted by Heat
+- **Major Insight:** Runners in the middle of the pack in quartiles 2 and 3 are impacted the most by heat.
+- **Proof:** Quartiles 2 and 3 show higher individual $R^2$ values (Q2: 0.234, Q3: 0.264) than elites or the slowest quartile, which shows that their marathon performance is impacted the most by thermal stress.
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 4
+ggplot(data = quartiles, aes(x = avg_temp, y = avg_time_hours, color = as.factor(quartile))) +
+  geom_point(alpha = 0.6, size = 2) +  
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1) +  
+  scale_color_manual(values = c("1" = "navy", "2" = "blue", "3" = "skyblue4", "4" = "skyblue1"),
+                     labels = c("Q1 (Fastest)", "Q2", "Q3", "Q4 (Slowest)")) +
+  labs(title = "Temperature Sensitivity by Quartile",
+       x = "Average Temperature (°F)", y = "Finish Time (Hours)", color = "Quartile") +  
+  theme_minimal()
+```
+
+
+## 4. Ideal Racing Conditions
+- **Major Insight:** The ideal racing conditions for the Chicago Marathon are in the 50-65°F temperature bracket.
+- **Proof:** Density distributions across temperature ranges show that the marathon finish times are clustered tighter than other temperature ranges and they skew significantly faster compared the spikes with hotter weather.
+```{r}
+#| echo: false
+#| message: false
+#| fig-align: "center"
+#| fig-height: 4
+final_data %>%
+  mutate(temp_category = case_when(
+    avg_race_temp_f < 50 ~ "Cold (<50°F)",
+    avg_race_temp_f < 65 & avg_race_temp_f >= 50 ~ "Mild (50-65°F)",
+    TRUE ~ "Warm/Hot (>65°F)"
+  )) %>%
+  ggplot(aes(x = finish_time_seconds / 3600, fill = temp_category)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Finish Time Density Across Temperature Brackets",
+       x = "Finish Time (Hours)", y = "Density", fill = "Conditions") +
+  theme_minimal()
+```
+
 ## Major Insights
+- Temperature: Heat impacts runners more than any other weather element. It has a stronger relationship with finish time variance than precipitation or humidity.
+- For every 1°F increase in temperature, an average of `r round(gen_slope, 2)` seconds are added to a general runner's finish time.
 
 ## Important Trends
-
 - **General Population Slope:** `r round(gen_slope, 4)` sec/°F (95% CI: `r round(gen_ci$conf.low, 4)`–`r round(gen_ci$conf.high, 4)` sec/°F)
 - **Elite Sample Slope:** `r round(elite_slope, 4)` sec/°F (95% CI: `r round(elite_ci$conf.low, 4)`–`r round(elite_ci$conf.high, 4)` sec/°F)
 - **Quartile Patterns:** Runners from Q2 and Q3 had the highest R\^2 values (Q2: 0.234, Q3: 0.264). The weather conditions had a greater impact on the finishing times of runners from Q2 and Q3 than Q1 and Q4.

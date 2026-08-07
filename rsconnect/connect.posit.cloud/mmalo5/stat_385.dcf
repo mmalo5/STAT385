@@ -8,5 +8,3 @@ appId: 019fbeaf-67d6-5801-c26c-360733619e94
 bundleId:
 url:
 version: 1
-asMultiple: FALSE
-asStatic: FALSE
