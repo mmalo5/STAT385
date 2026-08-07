@@ -139,8 +139,6 @@ elite_model <- lm(avg_time_hours ~ avg_temp, data = top_1percent %>%
 #p-vals, t-stats, 95% CIs
 general_stats <- tidy(general_model, conf.int = TRUE, level = 0.95)
 elite_stats <- tidy(elite_model, conf.int = TRUE, level = 0.95)
-#print(general_stats)
-#print(elite_stats)
 
 #group by temp
 temp_grouping <- final_data %>%
@@ -173,6 +171,31 @@ gender_grouping <- final_data %>%
     .groups = "drop"
   )
 
+#bins of temp impact
+temp_binned_plot <- ggplot(temp_grouping, aes(x=temp_bin, y= avg_finish_hours)) +
+  geom_col(fill = "steelblue", alpha = 1) +
+  labs(
+    title = "Average Marathon Finish Time by Temperature Brackets",
+    subtitle = "5°F Temperature Bins",
+    x = "Temperature Bin (°F)",
+    y = "Average Finish Time (Hours)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#static plot for gender
+gender_plot <- ggplot(gender_yearly, aes(x = avg_temp, y = avg_time_hours, color = gender)) +
+  geom_point(size = 2.5, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
+  scale_color_manual(values = c("Man" = "blue", "Woman" = "pink")) +
+  labs(
+    title = "Gender Heat Vulnerability Comparison",
+    x = "Average Race Temperature (°F)",
+    y = "Average Finish Time (Hours)",
+    color = "Gender"
+  ) +
+  theme_minimal()
+
 man_runners <- lm(avg_time ~ avg_temp, data = gender_grouping %>% filter(gender == "Man"))
 woman_runners <- lm(avg_time ~ avg_temp, data = gender_grouping %>% filter(gender == "Woman"))
 
@@ -181,12 +204,8 @@ runners_2007 <- runner_data %>% filter(year == 2007)
 finished_2007 <- runners_2007 %>% drop_na(finish_time_seconds) %>% nrow()
 total_2007 <- nrow(runners_2007)
 
-cat("2007 Runners:", total_2007, "\n")
-cat("2007 Finishers:", finished_2007, "\n")
-
 without_2007_data <- final_data %>% filter(year != 2007) %>% group_by(year) %>% summarize(time = mean(finish_time_seconds)/3600, temp = mean(avg_race_temp_f))
 without_2007_model <- lm(time ~ temp, data = without_2007_data)
-print(summary(without_2007_model))
 
 #2007 comparison
 compare2007 <- final_data %>%
@@ -197,18 +216,12 @@ compare2007 <- final_data %>%
     avg_temp_f = mean(avg_race_temp_f, na.rm = TRUE),
     runner_count = n()
   )
-print(compare2007)
+
 #statistical tests to compare 2007 and others years
 test2007_data <- final_data %>%
   mutate(is_2007 = ifelse(year == 2007, "2007 Heat", "Normal Years"))
-#welch's t-test
 t_test_result <- t.test(finish_time_seconds~is_2007, data=test2007_data)
-print("Welch's t-test for mean finish times")
-print(t_test_result)
-#variance test
 var_test_result <- var.test(finish_time_seconds~is_2007, data=test2007_data)
-print("Variance test for finish time variances")
-print(var_test_result)
 
 compare_2007_elites <- spread_data %>%
   filter(year == 2007) %>%
@@ -219,30 +232,22 @@ compare_2007_elites <- spread_data %>%
     runner_count = n(),
     .groups = "drop"
   )
-print(compare_2007_elites)
 
 true_temp_model <- lm(avg_time_hours ~ avg_temp, data = final_data %>% group_by(year) %>% summarize(avg_time_hours = mean(finish_time_seconds)/3600, avg_temp = mean(avg_race_temp_f)))
 apparent_temp_model <- lm(avg_time_hours ~ avg_apparent_temp, data = final_data %>% group_by(year) %>% summarize(avg_time_hours = mean(finish_time_seconds)/3600, avg_apparent_temp = mean(avg_apparent_temp_f)))
 
-print("Temperature model summary")
-print(summary(true_temp_model))
-
-print("Apparent Temperature model summary")
-print(summary(apparent_temp_model))
-
 #difference in p-values
 gender_diff_model <- lm(avg_time_hours ~ avg_temp*gender, data=gender_yearly)
-print(summary(gender_diff_model))
 
 #visualizing quartiles
 viualize_quartiles <- final_data %>%
   group_by(year) %>%
   summarize(q5  = quantile(finish_time_seconds, 0.05, na.rm = TRUE)/3600,
-    q25 = quantile(finish_time_seconds, 0.25, na.rm = TRUE)/3600,
-    q50 = quantile(finish_time_seconds, 0.50, na.rm = TRUE)/3600,
-    q75 = quantile(finish_time_seconds, 0.75, na.rm = TRUE)/3600,
-    q95 = quantile(finish_time_seconds, 0.95, na.rm = TRUE)/3600,
-    .groups = "drop") %>%
+            q25 = quantile(finish_time_seconds, 0.25, na.rm = TRUE)/3600,
+            q50 = quantile(finish_time_seconds, 0.50, na.rm = TRUE)/3600,
+            q75 = quantile(finish_time_seconds, 0.75, na.rm = TRUE)/3600,
+            q95 = quantile(finish_time_seconds, 0.95, na.rm = TRUE)/3600,
+            .groups = "drop") %>%
   arrange(desc(year))
 
 #Tidymodels linear regression fitting
@@ -250,267 +255,204 @@ regression_simple <- linear_reg() |> set_engine("lm")
 regression_general_sample_fit <- regression_simple |> fit(finish_time_seconds ~ avg_race_temp_f, data = final_data)
 regression_top1percent_fit <- regression_simple |> fit(finish_time_seconds ~ avg_race_temp_f, data = top_1percent)
 
-gen_t_stat <- tidy(regression_general_sample_fit)$statistic[2]
-gen_df <- glance(regression_general_sample_fit)$df.residual
-gen_log_p <- log(2) + pt(-abs(gen_t_stat), df=gen_df, log.p=TRUE)
-gen_log10 <- gen_log_p/log(10) 
-
-top1_t_stat <- tidy(regression_top1percent_fit)$statistic[2]
-top1_df <- glance(regression_top1percent_fit)$df.residual
-top1_log_p <- log(2) + pt(-abs(top1_t_stat), df=top1_df, log.p=TRUE)
-top1_log10 <- top1_log_p/log(10)
-
-#Slopes and r.squared metrics
 gen_slope <- tidy(regression_general_sample_fit)$estimate[2]  
-gen_rsquared <- glance(regression_general_sample_fit)$r.squared 
 top1_slope <- tidy(regression_top1percent_fit)$estimate[2] 
-top1_rsquared <- glance(regression_top1percent_fit)$r.squared
-
-#Temperature increase impact table
-temp_incr <- c(1,2,3,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75)
-heat_incr_table <- tibble(
-  temp_incr_f = temp_incr,
-  gen_sample_added_minutes = (gen_slope*temp_incr)/60,
-  top_1percent_added_minutes = (top1_slope*temp_incr)/60
-)
-
-#quartile regressions
-quartile_regressions <- final_data %>%
-  group_by(quartile) %>%
-  summarize(
-    slope_minutes_per_degree = coef(lm(finish_time_seconds ~ avg_race_temp_f))[2]/60,
-    r_squared = summary(lm(finish_time_seconds ~ avg_race_temp_f))$r.squared
-  )
-
-summary_stats_text <- paste0(
-  "For the Chicago Marathon, race-day temperature explains ", round(summary(without_2007_model)$r.squared * 100, 3), 
-  "% of the year-over-year variance in average finish times across our dataset of ", format(nrow(final_data), big.mark=","), " runners. ",
-  "For an increase of 1°F, the general running population slows down their marathon time by ", round(gen_slope / 60, 3), 
-  " minutes on average, and the elite top 1% of runners slow down by ", round(top1_slope/60, 3), " minutes on average."
-)
-summary_stats_text
 
 # UI - New Dashboard
+
 ui <- dashboardPage(
   dashboardHeader(title = "Chicago Marathon Explorer"),
-
+  
   # Sidebar Navigation - icons are from FontAwesome: https://fontawesome.com/
   dashboardSidebar(
     sidebarMenu(
       id = "sidebar",
       menuItem("Overview", tabName = "overview", icon = icon("list")),
       menuItem("Data Explorer", 
-        icon = icon("compass"),
-        menuSubItem("Weather Story", tabName = "weather_story"),
-        menuSubItem("Race Story", tabName = "race_story")
+               icon = icon("chart-simple"),
+               menuSubItem("Weather Story", tabName = "weather_story"),
+               menuSubItem("Race Story", tabName = "race_story"),
+               menuSubItem("Apparent Temperature", tabName = "res_apparent"),
+               menuSubItem("Temperature", tabName = "res_temp"),
+               menuSubItem("Quartile Performance", tabName = "res_quartiles"),
+               menuSubItem("Cohort & Demographics", tabName = "res_demographics"),
+               menuSubItem("Distributions", tabName = "res_distributions")
       ),
-      menuItem("Results/Findings", tabName = "results", icon = icon("chart-simple")),
+      menuItem("Results/Findings", tabName = "results_findings", icon = icon("chart-bar")),
       menuItem("Course Map", tabName = "map", icon = icon("map")),
       menuItem("About", tabName = "about", icon = icon("circle-info"))
     )
   ),
-
-#  Body Contents
+  
+  
+  #  Body Contents
   dashboardBody(
     tabItems(
       # Overview Page
       tabItem(tabName = "overview",
-        h2("Welcome to the Chicago Marathon Dashboard"),
-        p("This project analyzes the impact of weather on runner performance spanning from 2000 through 2025.")
+              h2("The Effect of Weather on Performance at the Chicago Marathon", style = "font-size: 24px; font-weight: bold;"),
+              p("This project analyzes the impact of weather on runner performance spanning from 2000 through 2025."),
+              p("The Chicago Marathon is one of the world's most popular races, with over 50,000 runners participating each year."), 
+              p("The course has changed over the years to better navigate the city and it crosses across many communities in the city. The primary external factor that impacts marathon finish time is weather, which impacts athletes both physically and mentally."),
+              p("This project references a dataset of over 930,000 Chicago Marathon results and hourly weather from historical weather logs from the years 2000 to 2025. The goal of this project is to analyze how weather factors such as temperature, humidity, wind speed, and precipitation impact marathon finish times across different groups of runners.")
       ),
-
+      
       # Data/Weather Story Page
       tabItem(tabName = "weather_story",
-        h2("Weather Story"),
-        p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
-        DTOutput("weather_table")
+              h2("Weather Story"),
+              p("This table shows hourly weather data recorded during the Chicago Marathon from 2000 to 2025."),
+              p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
+              DTOutput("weather_table")
       ),
-
+      
       # Data/Race Story Page
       tabItem(tabName = "race_story",
-        h2("Race Story"),
-        p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
-        DTOutput("race_table")
+              h2("Race Story"),
+              p("This table shows runners' yearly performance metrics including winning times and averages."),
+              p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
+              DTOutput("race_table")
       ),
-
-      # Results/Findings Page
-      tabItem(tabName = "results",
-        # Yearly Performance
-        fluidRow(
-          column(width = 3,
-            box(
-              title = "Controls & Filters",
-              status = "primary",
-              width = 12,
-              selectInput("group", "Choose Runner Group:",
-                choices = list("General Sample", "Top 1% Elites")),
-              selectInput("weather_metric", "Select Weather Factor:",
-                choices = list("Temperature (°F)" = "avg_race_temp_f",
-                              "Relative Humidity (%)" = "avg_humidity_pct",
-                              "Precipitation (in)" = "total_precip_in"),
-                selected = "avg_race_temp_f"),
-              sliderInput("year_range", "Select Year Range:",
-                min = 2000, max = 2025, value = c(2000, 2025), sep = "")
-            )
-          ),
-          column(width = 9,
-            plotlyOutput("scatter_plot_1"),
-            br(),
-            h4("Weather Impact on Marathon"),
-            p("This scatter plot shows how weather factors impact marathon finishing times"),
-            tableOutput("summary_table_1")
-          )
-        ),
-
-        fluidRow(
-          column(width = 3,
-            box(
-              title = "Controls & Filters",
-              status = "primary",
-              width = 12,
-              selectInput("quartile_choice", "Choose Runner Quartile:",
-                choices = list("Q1 (Fastest)" = 1, "Q2 (Average)" = 2,
-                              "Q3 (Average)" = 3, "Q4 (Slowest)" = 4))
-            )
-          ),
-          column(width = 9,
-            plotlyOutput("scatter_plot_2"),
-            br(),
-            tableOutput("summary_table_2")
-          )
-        ),
-
-        # Demographic Charts
-        br(),
-        h3("Cohort & Demographic Comparisons"),
-        plotlyOutput("elites_vs_general_plot"),
-        br(),
-        plotlyOutput("men_vs_women_plot"),
-        br(),
-        plotlyOutput("elite_men_vs_women_plot"),
-
-        # Distribution Chart
-        br(),
-        h3("Distributions"),
-        plotOutput("percentile_plot")
+      
+      # Results Sub-page 1: Apparent Temperature
+      tabItem(tabName = "res_apparent",
+              fluidRow(
+                column(width = 3,
+                       box(
+                         title = "Controls & Filters",
+                         status = "primary",
+                         width = 12,
+                         selectInput("group_app", "Choose Runner Group:",
+                                     choices = list("General Sample", "Top 1% Elites")),
+                         sliderInput("year_range_app", "Select Year Range:",
+                                     min = 2000, max = 2025, value = c(2000, 2025), sep = "")
+                       )
+                ),
+                column(width = 9,
+                       plotlyOutput("scatter_plot_apparent"),
+                       br(),
+                       h4("Apparent Temperature Impact on Marathon"),
+                       p("This scatter plot shows how apparent temperature impacts marathon finishing times"),
+                       uiOutput("dynamic_summary_app"),
+                       br(),
+                       fluidRow(
+                         valueBoxOutput("overall_avg_time_box_app", width=4),
+                         valueBoxOutput("metric_avg_box_app", width=4),
+                         valueBoxOutput("rsquared_box_app", width=4)
+                       )
+                )
+              )
       ),
-
+      
+      # Results Sub-page 2: Temperature
+      tabItem(tabName = "res_temp",
+              fluidRow(
+                column(width = 3,
+                       box(
+                         title = "Controls & Filters",
+                         status = "primary",
+                         width = 12,
+                         selectInput("group_temp", "Choose Runner Group:",
+                                     choices = list("General Sample", "Top 1% Elites")),
+                         sliderInput("year_range_temp", "Select Year Range:",
+                                     min = 2000, max = 2025, value = c(2000, 2025), sep = "")
+                       )
+                ),
+                column(width = 9,
+                       plotlyOutput("scatter_plot_temp"),
+                       br(),
+                       h4("Temperature Impact on Marathon"),
+                       p("This scatter plot shows how ambient temperature impacts marathon finishing times"),
+                       br(),
+                       fluidRow(
+                         valueBoxOutput("overall_avg_time_box_temp", width=4),
+                         valueBoxOutput("metric_avg_box_temp", width=4),
+                         valueBoxOutput("rsquared_box_temp", width=4)
+                       )
+                )
+              )
+      ),
+      
+      # Results Sub-page 3: Quartiles
+      tabItem(tabName = "res_quartiles",
+              fluidRow(
+                column(width = 3,
+                       box(
+                         title = "Controls & Filters",
+                         status = "primary",
+                         width = 12,
+                         selectInput("quartile_choice", "Choose Runner Quartile:",
+                                     choices = list("Q1 (Fastest)" = 1, "Q2 (Average)" = 2,
+                                                    "Q3 (Average)" = 3, "Q4 (Slowest)" = 4))
+                       )
+                ),
+                column(width = 9,
+                       plotlyOutput("scatter_plot_2"),
+                       br(),
+                       h4("Performance by Quartiles"),
+                       p("This scatter plot shows how weather factors impact marathon finishing times for the selected runner quartile"),
+                       br(),
+                       fluidRow(
+                         valueBoxOutput("quartile_avg_time_box", width=4),
+                         valueBoxOutput("quartile_temp_box", width=4),
+                         valueBoxOutput("rsquared_box_2", width=4)
+                       )
+                )
+              )
+      ),
+      
+      # Results Sub-page 4: Cohort & Demographics
+      tabItem(tabName = "res_demographics",
+              h3("Cohort & Demographic Comparisons"),
+              plotlyOutput("elites_vs_general_plot"),
+              br(),
+              plotlyOutput("men_vs_women_plot"),
+              br(),
+              plotlyOutput("elite_men_vs_women_plot")
+      ),
+      
+      # Results Sub-page 5: Distributions
+      tabItem(tabName = "res_distributions",
+              h3("Distributions"),
+              plotOutput("percentile_plot")
+      ),
+      
+      # Static Results/Findings
+      tabItem(tabName = "results_findings",
+              h2("Results and Findings"),
+              p("This section goes over statistical conclusions with static regression visualizations and model outputs."),
+              br(),
+              #Temperature groups
+              h4("1. Temperature Brackets and Marathon Performance"),
+              plotOutput("static_temp_plot", height = 400),
+              p("Temperatures on race day grouped into 5°F bins. There is a clear increasing trend in average finish times as the weather gets warmer."),
+              br(),
+              hr(),
+              
+              #Gender groups
+              h4("2. Gender and Marathon Performance"),
+              plotOutput("static_gender_plot", height = 400),
+              p("This demonstrates how rising temperatures affect male and female runners at different rates.")
+      ),      
+      
       # Race Map Page
       tabItem(tabName = "map",
-        h2("Course Map Comparison"),
-        h3("Interactive Route Evolution: 2000 vs. 2025"),
-        leafletOutput("course_map", height = 600)
+              h2("Course Map Comparison"),
+              h3("Interactive Route Evolution: 2000 vs. 2025"),
+              leafletOutput("course_map", height = 600)
       ),
-
+      
       # About Page
       tabItem(tabName = "about",
-        h2("About the Project"),
-        h3("Methodology and Data Processing"),
-        p("Data was sourced from official Chicago Marathon results and hourly Open-Meteo weather APIs from 2000–2025."),
-        br(),
-        h4("The 2007 Heat"),
-        p("Note about the 2007 Chicago Marathon: Temperature spiked mid race at over 88°F which forced race organizers to stop the race early. Many runners suffered from heat stroke and one runner died.")
+              h2("About the Project"),
+              h3("Methodology and Data Processing"),
+              p("Data was sourced from official Chicago Marathon results and hourly Open-Meteo weather APIs from 2000–2025."),
+              br(),
+              h4("The 2007 Heat"),
+              p("Note about the 2007 Chicago Marathon: Temperature spiked mid race at over 88°F which forced race organizers to stop the race early. Many runners suffered from heat stroke and one runner died.")
       )
     )
   )
 )
-
-#UI
-
-# ui <- navbarPage(
-#   title = "Chicago Marathon Explorer",
-#   tabPanel("Overview",
-#            div(style = "padding: 30px;",
-#                h3("Welcome to the Chicago Marathon Dashboard"),
-#                p("This project analyzes the impact of weather on runner performance spanning from 2000 through 2025.")
-#            )
-#   ),
-  
-#   tabPanel("Data Explorer",
-#            navlistPanel("Stories",
-#                         tabPanel("Weather Story",
-#                                  div(style = "padding: 20px;",
-#                                      h3("Marathon Weather Conditions 2000-2025"),
-#                                      p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
-#                                      DTOutput("weather_table")
-#                                  )
-#                         ),
-#                         tabPanel("Race Story",
-#                                  div(style = "padding: 20px;",
-#                                      h3("Marathon Finish Time Records & Cohort Story"),
-#                                      p("*Note: 2020 Chicago Marathon Race was cancelled due to COVID.", style = "font-style: italic; color: #555; margin-bottom: 12px;"),
-#                                      DTOutput("race_table")
-#                                  )
-#                         )
-#            )
-#   ),
-  
-#   tabPanel("Results/Findings",
-#            sidebarLayout(
-#              sidebarPanel(
-#                h4("Controls & Filters"),
-#                selectInput("group", "Choose Runner Group:",
-#                            choices = list("General Sample", "Top 1% Elites")),
-#                selectInput("weather_metric", "Select Weather Factor:",
-#                            choices = list("Temperature (°F)" = "avg_race_temp_f",
-#                                           "Relative Humidity (%)" = "avg_humidity_pct",
-#                                           "Precipitation (in)" = "total_precip_in"),
-#                            selected = "avg_race_temp_f"),
-#                sliderInput("year_range", "Select Year Range:",
-#                            min = 2000, max = 2025, value = c(2000, 2025), sep = "")
-#              ),
-#              mainPanel(
-#                plotlyOutput("scatter_plot_1"),
-#                br(),
-#                h4("Weather Impact on Marathon"),
-#                p("This scatter plot shows how weather factors impact marathon finishing times"),
-#                tableOutput("summary_table_1")
-#              )
-#            ),
-#            hr(),
-#            sidebarLayout(
-#              sidebarPanel(
-#                selectInput("quartile_choice", "Choose Runner Quartile:",
-#                            choices = list("Q1 (Fastest)" = 1, "Q2 (Average)" = 2,
-#                                           "Q3 (Average)" = 3, "Q4 (Slowest)" = 4))
-#              ),
-#              mainPanel(
-#                plotlyOutput("scatter_plot_2"),
-#                br(),
-#                tableOutput("summary_table_2")
-#              )
-#            ),
-#            hr(), 
-#            h3("Cohort & Demographic Comparisons"),
-#            fluidRow(
-#              column(6, plotlyOutput("elites_vs_general_plot")),
-#              column(6, plotlyOutput("men_vs_women_plot"))
-#            ),
-#            br(),
-#            fluidRow(
-#              column(6, plotlyOutput("elite_men_vs_women_plot"))
-#            ),
-#            plotOutput("percentile_plot")
-#   ),
-  
-#   tabPanel("Course Map Comparison",
-#            div(style = "padding: 20px;",
-#                h3("Interactive Route Evolution: 2000 vs. 2025"),
-#                p("Toggle routes on and off with the checkboxes"),
-#                leafletOutput("course_map", height = 600)
-#            )
-#   ),
-  
-#   tabPanel("About the Project",
-#            div(style = "padding: 30px;",
-#                h3("Methodology and Data Processing"),
-#                p("Data was sourced from official Chicago Marathon results and hourly Open-Meteo weather APIs from 2000–2025."),
-#                br(),
-#                h4("The 2007 Heat"),
-#                p("Note about the 2007 Chicago Marathon: Temperature spiked mid race at over 88°F which forced race organizers to stop the race early. Many runners suffered from heat stroke and one runner died.")
-#            )
-#   )
-# )
 
 #SERVER
 
@@ -526,44 +468,138 @@ server <- function(input, output, session) {
               options = list(pageLength = 25, lengthChange = FALSE, searching = TRUE, scrollX = TRUE))
   })
   
-  yearly_data_1 <- reactive({
+  # Value boxes for Apparent Temperature Page
+  output$overall_avg_time_box_app <- renderValueBox({
+    plot_data <- yearly_data_app()
+    avg_val <- round(mean(plot_data$avg_time_hours, na.rm = TRUE), 2)
+    valueBox(avg_val, "Overall Avg Time (Hours)")
+  })
+  
+  output$metric_avg_box_app <- renderValueBox({
+    plot_data <- yearly_data_app()
+    avg_val <- round(mean(plot_data$metric_val, na.rm = TRUE), 2)
+    valueBox(avg_val, "Selected Apparent Temp Avg (°F)")
+  })
+  
+  output$rsquared_box_app <- renderValueBox({
+    plot_data <- yearly_data_app()
+    stat_model <- lm(avg_time_hours ~ metric_val, data = plot_data)
+    r_sq <- round(summary(stat_model)$r.squared, 2)
+    valueBox(r_sq, "R-squared")
+  })
+  
+  output$dynamic_summary_app <- renderUI({
+    plot_data <- yearly_data_app()
+    stat_model <- lm(avg_time_hours ~ metric_val, data = plot_data)
+    r_sq <- round(summary(stat_model)$r.squared*100, 2)
+    slope_val_mins <- round(coef(stat_model)[2]*60, 2)
+    
+    tagList(
+      p(paste0(
+        "For the group (", input$group_app, "), the apparent temperature explains ", r_sq, 
+        "% of the year to year variance in finish times. ",
+        "Each 1°F increase in apparent temperature changes finish times by ≈", 
+        slope_val_mins, " minutes. This demonstrates the impact humidity and temperatures has on runners."
+      ))
+    )
+  })
+  
+  # Value boxes for Temperature Page
+  output$overall_avg_time_box_temp <- renderValueBox({
+    plot_data <- yearly_data_temp()
+    avg_val <- round(mean(plot_data$avg_time_hours, na.rm = TRUE), 2)
+    valueBox(avg_val, "Overall Avg Time (Hours)")
+  })
+  
+  output$metric_avg_box_temp <- renderValueBox({
+    plot_data <- yearly_data_temp()
+    avg_val <- round(mean(plot_data$metric_val, na.rm = TRUE), 2)
+    valueBox(avg_val, "Selected Temp Avg (°F)")
+  })
+  
+  output$rsquared_box_temp <- renderValueBox({
+    plot_data <- yearly_data_temp()
+    stat_model <- lm(avg_time_hours ~ metric_val, data = plot_data)
+    r_sq <- round(summary(stat_model)$r.squared, 2)
+    valueBox(r_sq, "R-squared")
+  })
+  
+  # Value boxes for Quartiles
+  output$quartile_avg_time_box <- renderValueBox({
+    plot_data <- yearly_data_2()
+    avg_val <- round(mean(plot_data$avg_time_hours, na.rm = TRUE), 2)
+    valueBox(avg_val, paste("Quartile", input$quartile_choice, "Avg Time (Hrs)"))
+  })
+  
+  output$quartile_temp_box <- renderValueBox({
+    plot_data <- yearly_data_2()
+    avg_val <- round(mean(plot_data$avg_temp, na.rm = TRUE), 1)
+    valueBox(avg_val, "Overall Avg Temp (°F)")
+  })
+  
+  output$rsquared_box_2 <- renderValueBox({
+    plot_data <- yearly_data_2()
+    stat_model <- lm(avg_time_hours ~ avg_temp, data = plot_data)
+    r_sq <- round(summary(stat_model)$r.squared, 2)
+    valueBox(r_sq, "R-squared")
+  })
+  
+  yearly_data_app <- reactive({
     spread_data %>%
       filter(
-        runner_group == input$group,
-        year >= input$year_range[1],
-        year <= input$year_range[2]
+        runner_group == input$group_app,
+        year >= input$year_range_app[1],
+        year <= input$year_range_app[2]
       ) %>%
       group_by(year) %>%
       summarize(
-        metric_val = mean(.data[[input$weather_metric]], na.rm = TRUE),
+        metric_val = mean(avg_apparent_temp_f, na.rm = TRUE),
         avg_time_hours = mean(finish_time_seconds, na.rm = TRUE) / 3600,
         .groups = "drop"
       ) %>%
       mutate(
-        hover_info = paste("Year:", year, "\nWeather Val:", round(metric_val, 1),
+        hover_info = paste("Year:", year, "\nApparent Temp:", round(metric_val, 1), "°F",
                            "\nTime:", round(avg_time_hours, 2), "Hrs")
       )
   })
   
-  output$scatter_plot_1 <- renderPlotly({
-    p <- ggplot(yearly_data_1(), aes(x = metric_val, y = avg_time_hours)) +
+  yearly_data_temp <- reactive({
+    spread_data %>%
+      filter(
+        runner_group == input$group_temp,
+        year >= input$year_range_temp[1],
+        year <= input$year_range_temp[2]
+      ) %>%
+      group_by(year) %>%
+      summarize(
+        metric_val = mean(avg_race_temp_f, na.rm = TRUE),
+        avg_time_hours = mean(finish_time_seconds, na.rm = TRUE) / 3600,
+        .groups = "drop"
+      ) %>%
+      mutate(
+        hover_info = paste("Year:", year, "\nTemperature:", round(metric_val, 1), "°F",
+                           "\nTime:", round(avg_time_hours, 2), "Hrs")
+      )
+  })
+  
+  output$scatter_plot_apparent <- renderPlotly({
+    p <- ggplot(yearly_data_app(), aes(x = metric_val, y = avg_time_hours)) +
       geom_point(aes(text = hover_info), alpha = 1, color = "steelblue", size = 3) + 
       geom_smooth(method = "lm", formula = y ~ x, color = "black", se = FALSE) +
-      labs(title = paste("Yearly Performance of", input$group),
-           x = "Selected Weather Factor", y = "Finish Time Hours") + theme_minimal()
+      labs(title = paste("Different Weather Factors' Impact on Weather Performance (", input$group_app, ")"),
+           x = "Apparent Temperature (°F)", y = "Finish Time Hours") + theme_minimal()
     ggplotly(p, tooltip = "text") %>%
       layout(margin = list(t=70))
   })
   
-  output$summary_table_1 <- renderTable({
-    plot_data <- yearly_data_1()
-    stat_model <- lm(avg_time_hours ~ metric_val, data = plot_data)
-    r_squared <- round(summary(stat_model)$r.squared, 5)
-    spread_data %>%
-      filter(runner_group == input$group, year >= input$year_range[1], year <= input$year_range[2]) %>%
-      summarize(`Overall Avg Time (Hours)` = mean(finish_time_seconds, na.rm = TRUE)/3600,
-                `Selected Metric Avg` = mean(.data[[input$weather_metric]], na.rm = TRUE)) %>%
-      mutate(`R-squared` = r_squared)
+  output$scatter_plot_temp <- renderPlotly({
+    p <- ggplot(yearly_data_temp(), aes(x = metric_val, y = avg_time_hours)) +
+      geom_point(aes(text = hover_info), alpha = 1, color = "steelblue", size = 3) + 
+      geom_smooth(method = "lm", formula = y ~ x, color = "black", se = FALSE) +
+      labs(title = paste("Different Weather Factors' Impact on Weather Performance (", input$group_temp, ")"),
+           x = "Temperature (°F)", y = "Finish Time Hours") + theme_minimal()
+    ggplotly(p, tooltip = "text") %>%
+      layout(margin = list(t=70))
   })
   
   yearly_data_2 <- reactive({
@@ -576,7 +612,7 @@ server <- function(input, output, session) {
         .groups = "drop"
       ) %>%
       mutate(
-        hover_info = paste("Year:", year, "\nTemp:", round(avg_temp, 1), "°F",
+        hover_info = paste("Year:", year, "\nTemperature:", round(avg_temp, 1), "°F",
                            "\nTime:", round(avg_time_hours, 2), "Hrs")
       )
   })
@@ -591,17 +627,6 @@ server <- function(input, output, session) {
       layout(margin = list(t=70))
   })
   
-  output$summary_table_2 <- renderTable({
-    plot_data <- yearly_data_2()
-    stat_model <- lm(avg_time_hours ~ avg_temp, data = plot_data)
-    r_squared <- round(summary(stat_model)$r.squared, 5)
-    final_data %>%
-      filter(quartile == input$quartile_choice) %>%
-      summarize(`Overall Avg Time (Hours)` = mean(finish_time_seconds, na.rm = TRUE)/3600,
-                `Overall Avg Temp (°F)` = mean(avg_race_temp_f, na.rm = TRUE)) %>%
-      mutate(`R-squared` = r_squared)
-  })
-  
   #elite vs general plot
   output$elites_vs_general_plot <- renderPlotly({
     gen_vs_elite_summary <- spread_data %>%
@@ -610,41 +635,61 @@ server <- function(input, output, session) {
         avg_time = mean(finish_time_seconds) / 3600,
         avg_temp = mean(avg_race_temp_f, na.rm = TRUE),
         .groups = "drop"
+      ) %>%
+      mutate(
+        hover_info = paste("Year:", year,
+                           "\nCohort:", runner_group,
+                           "\nAvg Temp:", round(avg_temp, 2), "°F",
+                           "\nAvg Time:", round(avg_time, 2), "Hrs")
       )
     p <- ggplot(gen_vs_elite_summary, aes(x = avg_temp, y = avg_time, color = runner_group)) +
-      geom_point(size = 3, alpha = 1) +
+      geom_point(aes(text = hover_info), size = 3, alpha = 1) +
       geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
       scale_color_manual(values = c("General Sample" = "steelblue", "Top 1% Elites" = "orange")) +
       labs(title = "Elite vs. General Runners Performance by Temperature",
            x = "Avg Race Temperature (°F)", y = "Avg Finish Time (Hours)", color = "Cohort") +
       theme_minimal()
     
-    ggplotly(p) %>% layout(margin=list(t = 50), legend = list(orientation="h", y = -0.3))
+    ggplotly(p, tooltip = "text") %>% layout(margin=list(t = 50), legend = list(orientation="h", y = -0.3))
   })
   
   #men vs women plot
   output$men_vs_women_plot <- renderPlotly({
-    p <- ggplot(gender_yearly, aes(x = avg_temp, y = avg_time_hours, color = gender)) +
-      geom_point(size = 3, alpha = 1) +
+    gender_yearly_hover <- gender_yearly %>%
+      mutate(
+        hover_info = paste("Year:", year,
+                           "\nGender:", gender,
+                           "\nAvg Temp:", round(avg_temp,2), "°F",
+                           "\nAvg Time:", round(avg_time_hours,2), "Hrs")
+      )
+    p <- ggplot(gender_yearly_hover, aes(x = avg_temp, y = avg_time_hours, color = gender)) +
+      geom_point(aes(text = hover_info), size = 3, alpha = 1) +
       geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
       scale_color_manual(values = c("Man" = "blue", "Woman" = "pink")) +
       labs(title = "Men vs. Women Performance by Temperature",
            x = "Avg Race Temperature (°F)", y = "Avg Finish Time (Hours)", color = "Gender") +
       theme_minimal()
     
-    ggplotly(p) %>% layout(margin = list(t = 50), legend = list(orientation = "h", y = -0.3))
+    ggplotly(p, tooltip = "text") %>% layout(margin = list(t = 50), legend = list(orientation = "h", y = -0.3))
   })
   
   output$elite_men_vs_women_plot <- renderPlotly({
-    p <- ggplot(elite_gender_yearly, aes(x = avg_temp, y = avg_time_hours, color = gender)) +
-      geom_point(size = 3, alpha = 1) +
+    elite_gender_yearly_hover <- elite_gender_yearly %>%
+      mutate(
+        hover_info = paste("Year:", year,
+                           "\nGender:", gender,
+                           "\nAvg Temp:", round(avg_temp,2), "°F",
+                           "\nAvg Time:", round(avg_time_hours,2), "Hrs")
+      )
+    p <- ggplot(elite_gender_yearly_hover, aes(x = avg_temp, y = avg_time_hours, color = gender)) +
+      geom_point(aes(text = hover_info), size = 3, alpha = 1) +
       geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
       scale_color_manual(values = c("Man" = "darkblue", "Woman" = "purple")) +
       labs(title = "Top 1% Elites: Men vs. Women Performance",
            x = "Avg Race Temperature (°F)", y = "Avg Finish Time (Hours)", color = "Gender") +
       theme_minimal()
     
-    ggplotly(p) %>% layout(margin = list(t = 50), legend = list(orientation = "h", y = -0.3))
+    ggplotly(p, tooltip = "text") %>% layout(margin = list(t = 50), legend = list(orientation = "h", y = -0.3))
   })
   
   #quartile_plot
@@ -665,9 +710,52 @@ server <- function(input, output, session) {
       theme(
         panel.grid.minor = element_blank(),
         text = element_text(size = 12),
-        plot.title = element_text(face = "bold", color = "purple")
+        plot.title = element_text(face = "bold", color= "purple")
       )
   })
+  
+  #Static temperature brackets
+  output$static_temp_plot <- renderPlot({
+    ggplot(temp_grouping, aes(x=temp_bin, y= avg_finish_hours)) +
+      geom_col(fill = "steelblue", alpha = 1) +
+      labs(
+        title = "Average Marathon Finish Time by Temperature Brackets",
+        subtitle = "5°F Temperature Bins",
+        x = "Temperature Bin (°F)",
+        y = "Average Finish Time (Hours)"
+      ) +
+      theme_minimal() +
+      theme(
+        text = element_text(size = 14),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(face = "bold", size = 16)
+      )
+  })
+
+  
+  #Static gender heat Plot
+  output$static_gender_plot <- renderPlot({
+    ggplot(gender_yearly, aes(x = avg_temp, y = avg_time_hours, color = gender)) +
+      geom_point(size = 2.5, alpha = 1) +
+      geom_smooth(method = "lm", se = FALSE, linewidth = 1) +
+      scale_color_manual(values = c("Man" = "blue", "Woman" = "pink")) +
+      labs(
+        title = "Gender Heat Vulnerability Comparison",
+        x = "Average Race Temperature (°F)",
+        y = "Average Finish Time (Hours)",
+        color = "Gender"
+      ) +
+      theme_minimal() +
+      theme(
+        text = element_text(size = 14),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(face = "bold", size = 16),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14, face = "bold")
+      )
+  })
+  
   
   #map
   output$course_map <- renderLeaflet({
@@ -683,5 +771,14 @@ server <- function(input, output, session) {
       )
   })
 }
+
+#gender summary
+final_data %>%
+  filter(gender %in% c("Man", "Woman")) %>%
+  group_by(gender) %>%
+  summarize(
+    avg_finish_hours = round(mean(finish_time_seconds, na.rm = TRUE) / 3600,2),
+    avg_finish_minutes = sprintf("%.2f", mean(finish_time_seconds, na.rm = TRUE) / 60)
+  )
 
 shinyApp(ui, server)
