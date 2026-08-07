@@ -1,10 +1,10 @@
 {
   "R": {
-    "Version": "4.5.2",
+    "Version": "4.6.1",
     "Repositories": [
       {
         "Name": "CRAN",
-        "URL": "https://cran.rstudio.com"
+        "URL": "https://cloud.r-project.org"
       }
     ]
   },
@@ -235,16 +235,16 @@
     },
     "Matrix": {
       "Package": "Matrix",
-      "Version": "1.7-4",
+      "Version": "1.7-6",
       "Source": "Repository",
       "VersionNote": "do also bump src/version.h, inst/include/Matrix/version.h",
-      "Date": "2025-08-27",
+      "Date": "2026-07-24",
       "Priority": "recommended",
       "Title": "Sparse and Dense Matrix Classes and Methods",
       "Description": "A rich hierarchy of sparse and dense matrix classes, including general, symmetric, triangular, and diagonal matrices with numeric, logical, or pattern entries.  Efficient methods for operating on such matrices, often wrapping the 'BLAS', 'LAPACK', and 'SuiteSparse' libraries.",
       "License": "GPL (>= 2) | file LICENCE",
-      "URL": "https://Matrix.R-forge.R-project.org",
-      "BugReports": "https://R-forge.R-project.org/tracker/?atid=294&group_id=61",
+      "URL": "https://codeberg.org/jaganmn/Matrix",
+      "BugReports": "https://codeberg.org/jaganmn/Matrix/issues",
       "Contact": "Matrix-authors@R-project.org",
       "Authors@R": "c(person(\"Douglas\", \"Bates\", role = \"aut\", comment = c(ORCID = \"0000-0001-8316-9503\")), person(\"Martin\", \"Maechler\", role = c(\"aut\", \"cre\"), email = \"mmaechler+Matrix@gmail.com\", comment = c(ORCID = \"0000-0002-8685-9910\")), person(\"Mikael\", \"Jagan\", role = \"aut\", comment = c(ORCID = \"0000-0002-3542-2938\")), person(\"Timothy A.\", \"Davis\", role = \"ctb\", comment = c(ORCID = \"0000-0001-7614-6899\", \"SuiteSparse libraries\", \"collaborators listed in dir(system.file(\\\"doc\\\", \\\"SuiteSparse\\\", package=\\\"Matrix\\\"), pattern=\\\"License\\\", full.names=TRUE, recursive=TRUE)\")), person(\"George\", \"Karypis\", role = \"ctb\", comment = c(ORCID = \"0000-0003-2753-1437\", \"METIS library\", \"Copyright: Regents of the University of Minnesota\")), person(\"Jason\", \"Riedy\", role = \"ctb\", comment = c(ORCID = \"0000-0002-4345-4200\", \"GNU Octave's condest() and onenormest()\", \"Copyright: Regents of the University of California\")), person(\"Jens\", \"Oehlschlägel\", role = \"ctb\", comment = \"initial nearPD()\"), person(\"R Core Team\", role = \"ctb\", comment = c(ROR = \"02zz1nj61\", \"base R's matrix implementation\")))",
       "Depends": [
@@ -355,11 +355,11 @@
     },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
-      "Version": "15.4.0-1",
+      "Version": "15.4.2-1",
       "Source": "Repository",
       "Type": "Package",
       "Title": "'Rcpp' Integration for the 'Armadillo' Templated Linear Algebra Library",
-      "Date": "2026-06-17",
+      "Date": "2026-07-25",
       "Authors@R": "c(person(\"Dirk\", \"Eddelbuettel\", role = c(\"aut\", \"cre\"), email = \"edd@debian.org\", comment = c(ORCID = \"0000-0001-6419-907X\")), person(\"Romain\", \"Francois\", role = \"aut\", comment = c(ORCID = \"0000-0002-2444-4226\")), person(\"Doug\", \"Bates\", role = \"aut\", comment = c(ORCID = \"0000-0001-8316-9503\")), person(\"Binxiang\", \"Ni\", role = \"aut\"), person(\"Conrad\", \"Sanderson\", role = \"aut\", comment = c(ORCID = \"0000-0002-0049-4501\")))",
       "Description": "'Armadillo' is a templated C++ linear algebra library aiming towards a good balance between speed and ease of use. It provides high-level syntax and functionality deliberately similar to Matlab. It is useful for algorithm development directly in C++, or quick conversion of research code into production environments. It provides efficient classes for vectors, matrices and cubes where dense and sparse matrices are supported. Integer, floating point and complex numbers are supported. A sophisticated expression evaluator (based on template meta-programming) automatically combines several operations to increase speed and efficiency. Dynamic evaluation automatically chooses optimal code paths based on detected matrix structures. Matrix decompositions are provided through integration with LAPACK, or one of its high performance drop-in replacements (such as 'MKL' or 'OpenBLAS'). It can automatically use 'OpenMP' multi-threading (parallelisation) to speed up computationally expensive operations. . The 'RcppArmadillo' package includes the header files from the 'Armadillo' library; users do not need to install 'Armadillo' itself in order to use 'RcppArmadillo'. Starting from release 15.0.0, the minimum compilation standard is C++14. . Since release 7.800.0, 'Armadillo' is licensed under Apache License 2; previous releases were under licensed as MPL 2.0 from version 3.800.0 onwards and LGPL-3 prior to that; 'RcppArmadillo' (the 'Rcpp' bindings/bridge to Armadillo) is licensed under the GNU GPL version 2 or later, as is the rest of 'Rcpp'.",
       "License": "GPL (>= 2)",
@@ -747,7 +747,7 @@
     },
     "bslib": {
       "Package": "bslib",
-      "Version": "0.11.0",
+      "Version": "0.12.0",
       "Source": "Repository",
       "Title": "Custom 'Bootstrap' 'Sass' Themes for 'shiny' and 'rmarkdown'",
       "Authors@R": "c( person(\"Carson\", \"Sievert\", , \"carson@posit.co\", role = c(\"aut\", \"cre\"), comment = c(ORCID = \"0000-0002-4958-2844\")), person(\"Joe\", \"Cheng\", , \"joe@posit.co\", role = \"aut\"), person(\"Garrick\", \"Aden-Buie\", , \"garrick@posit.co\", role = \"aut\", comment = c(ORCID = \"0000-0002-7111-0077\")), person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\")), person(, \"Bootstrap contributors\", role = \"ctb\", comment = \"Bootstrap library\"), person(, \"Twitter, Inc\", role = \"cph\", comment = \"Bootstrap library\"), person(\"Javi\", \"Aguilar\", role = c(\"ctb\", \"cph\"), comment = \"Bootstrap colorpicker library\"), person(\"Thomas\", \"Park\", role = c(\"ctb\", \"cph\"), comment = \"Bootswatch library\"), person(, \"PayPal\", role = c(\"ctb\", \"cph\"), comment = \"Bootstrap accessibility plugin\") )",
@@ -800,7 +800,7 @@
       "Config/testthat/parallel": "true",
       "Config/testthat/start-first": "zzzz-bs-sass, fonts, zzz-precompile, theme-*, rmd-*",
       "Encoding": "UTF-8",
-      "Collate": "'accordion.R' 'breakpoints.R' 'bs-current-theme.R' 'bs-dependencies.R' 'bs-global.R' 'bs-remove.R' 'bs-theme-layers.R' 'bs-theme-preset-bootswatch.R' 'bs-theme-preset-brand.R' 'bs-theme-preset-builtin.R' 'bs-theme-preset.R' 'utils.R' 'bs-theme-preview.R' 'bs-theme-update.R' 'bs-theme.R' 'bslib-package.R' 'buttons.R' 'card.R' 'deprecated.R' 'files.R' 'fill.R' 'imports.R' 'input-code-editor.R' 'input-dark-mode.R' 'input-submit.R' 'input-switch.R' 'layout.R' 'nav-items.R' 'nav-update.R' 'navbar_options.R' 'navs-legacy.R' 'navs.R' 'onLoad.R' 'page.R' 'popover.R' 'precompiled.R' 'print.R' 'shiny-devmode.R' 'sidebar.R' 'staticimports.R' 'toast.R' 'toolbar.R' 'tooltip.R' 'utils-deps.R' 'utils-shiny.R' 'utils-tags.R' 'value-box.R' 'version-default.R' 'versions.R'",
+      "Collate": "'accordion.R' 'breakpoints.R' 'bs-current-theme.R' 'bs-dependencies.R' 'bs-global.R' 'bs-remove.R' 'bs-theme-layers.R' 'bs-theme-preset-bootswatch.R' 'bs-theme-preset-brand.R' 'bs-theme-preset-builtin.R' 'bs-theme-preset.R' 'utils.R' 'bs-theme-preview.R' 'bs-theme-update.R' 'bs-theme.R' 'bslib-package.R' 'buttons.R' 'card.R' 'deprecated.R' 'files.R' 'fill.R' 'imports.R' 'input-code-editor.R' 'input-dark-mode.R' 'input-submit.R' 'input-switch.R' 'layout.R' 'nav-items.R' 'nav-update.R' 'navbar_options.R' 'navs-legacy.R' 'navs.R' 'offcanvas.R' 'onLoad.R' 'page.R' 'popover.R' 'precompiled.R' 'print.R' 'shiny-devmode.R' 'sidebar.R' 'staticimports.R' 'toast.R' 'toolbar.R' 'tooltip.R' 'utils-deps.R' 'utils-shiny.R' 'utils-tags.R' 'value-box.R' 'version-default.R' 'versions.R'",
       "NeedsCompilation": "no",
       "Author": "Carson Sievert [aut, cre] (ORCID: <https://orcid.org/0000-0002-4958-2844>), Joe Cheng [aut], Garrick Aden-Buie [aut] (ORCID: <https://orcid.org/0000-0002-7111-0077>), Posit Software, PBC [cph, fnd], Bootstrap contributors [ctb] (Bootstrap library), Twitter, Inc [cph] (Bootstrap library), Javi Aguilar [ctb, cph] (Bootstrap colorpicker library), Thomas Park [ctb, cph] (Bootswatch library), PayPal [ctb, cph] (Bootstrap accessibility plugin)",
       "Maintainer": "Carson Sievert <carson@posit.co>",
@@ -3000,9 +3000,9 @@
     },
     "lattice": {
       "Package": "lattice",
-      "Version": "0.22-7",
+      "Version": "0.22-9",
       "Source": "Repository",
-      "Date": "2025-03-31",
+      "Date": "2026-02-03",
       "Priority": "recommended",
       "Title": "Trellis Graphics for R",
       "Authors@R": "c(person(\"Deepayan\", \"Sarkar\", role = c(\"aut\", \"cre\"), email = \"deepayan.sarkar@r-project.org\", comment = c(ORCID = \"0000-0003-4107-1553\")), person(\"Felix\", \"Andrews\", role = \"ctb\"), person(\"Kevin\", \"Wright\", role = \"ctb\", comment = \"documentation\"), person(\"Neil\", \"Klepeis\", role = \"ctb\"), person(\"Johan\", \"Larsson\", role = \"ctb\", comment = \"miscellaneous improvements\"), person(\"Zhijian (Jason)\", \"Wen\", role = \"cph\", comment = \"filled contour code\"), person(\"Paul\", \"Murrell\", role = \"ctb\", email = \"paul@stat.auckland.ac.nz\"), person(\"Stefan\", \"Eng\", role = \"ctb\", comment = \"violin plot improvements\"), person(\"Achim\", \"Zeileis\", role = \"ctb\", comment = \"modern colors\"), person(\"Alexandre\", \"Courtiol\", role = \"ctb\", comment = \"generics for larrows, lpolygon, lrect and lsegments\") )",
@@ -3033,7 +3033,7 @@
       "URL": "https://lattice.r-forge.r-project.org/",
       "BugReports": "https://github.com/deepayan/lattice/issues",
       "NeedsCompilation": "yes",
-      "Author": "Deepayan Sarkar [aut, cre] (<https://orcid.org/0000-0003-4107-1553>), Felix Andrews [ctb], Kevin Wright [ctb] (documentation), Neil Klepeis [ctb], Johan Larsson [ctb] (miscellaneous improvements), Zhijian (Jason) Wen [cph] (filled contour code), Paul Murrell [ctb], Stefan Eng [ctb] (violin plot improvements), Achim Zeileis [ctb] (modern colors), Alexandre Courtiol [ctb] (generics for larrows, lpolygon, lrect and lsegments)",
+      "Author": "Deepayan Sarkar [aut, cre] (ORCID: <https://orcid.org/0000-0003-4107-1553>), Felix Andrews [ctb], Kevin Wright [ctb] (documentation), Neil Klepeis [ctb], Johan Larsson [ctb] (miscellaneous improvements), Zhijian (Jason) Wen [cph] (filled contour code), Paul Murrell [ctb], Stefan Eng [ctb] (violin plot improvements), Achim Zeileis [ctb] (modern colors), Alexandre Courtiol [ctb] (generics for larrows, lpolygon, lrect and lsegments)",
       "Maintainer": "Deepayan Sarkar <deepayan.sarkar@r-project.org>",
       "Repository": "CRAN"
     },
@@ -4699,7 +4699,7 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "1.2.3",
+      "Version": "1.2.4",
       "Source": "Repository",
       "Type": "Package",
       "Title": "Project Environments",
@@ -4741,12 +4741,12 @@
         "webfakes"
       ],
       "Encoding": "UTF-8",
-      "RoxygenNote": "7.3.3",
       "VignetteBuilder": "knitr",
       "Config/Needs/website": "tidyverse/tidytemplate",
       "Config/testthat/edition": "3",
       "Config/testthat/parallel": "true",
       "Config/testthat/start-first": "bioconductor,python,install,restore,snapshot,retrieve,remotes",
+      "Config/roxygen2/version": "8.0.0",
       "NeedsCompilation": "no",
       "Author": "Kevin Ushey [aut, cre] (ORCID: <https://orcid.org/0000-0003-2880-7407>), Hadley Wickham [aut] (ORCID: <https://orcid.org/0000-0003-4757-117X>), Posit Software, PBC [cph, fnd]",
       "Maintainer": "Kevin Ushey <kevin@rstudio.com>",
@@ -4914,11 +4914,11 @@
     },
     "rpart": {
       "Package": "rpart",
-      "Version": "4.1.24",
+      "Version": "4.1.27",
       "Source": "Repository",
       "Priority": "recommended",
-      "Date": "2025-01-06",
-      "Authors@R": "c(person(\"Terry\", \"Therneau\", role = \"aut\", email = \"therneau@mayo.edu\"), person(\"Beth\", \"Atkinson\", role = c(\"aut\", \"cre\"), email = \"atkinson@mayo.edu\"), person(\"Brian\", \"Ripley\", role = \"trl\", email = \"ripley@stats.ox.ac.uk\", comment = \"producer of the initial R port, maintainer 1999-2017\"))",
+      "Date": "2026-03-26",
+      "Authors@R": "c(person(\"Terry\", \"Therneau\", role = \"aut\", email = \"therneau@mayo.edu\"), person(\"Beth\", \"Atkinson\", role = c(\"aut\", \"cre\"), email = \"atkinson@mayo.edu\"), person(\"Brian\", \"Ripley\", role = \"trl\", email = \"Brian.Ripley@R-project.org\", comment = \"producer of the initial R port, maintainer 1999-2017\"))",
       "Description": "Recursive partitioning for classification,  regression and survival trees.  An implementation of most of the  functionality of the 1984 book by Breiman, Friedman, Olshen and Stone.",
       "Title": "Recursive Partitioning and Regression Trees",
       "Depends": [
@@ -5615,9 +5615,9 @@
     },
     "stringi": {
       "Package": "stringi",
-      "Version": "1.8.7",
+      "Version": "1.8.9",
       "Source": "Repository",
-      "Date": "2025-03-27",
+      "Date": "2026-07-30",
       "Title": "Fast and Portable Character String Processing Facilities",
       "Description": "A collection of character string/text/natural language processing tools for pattern searching (e.g., with 'Java'-like regular expressions or the 'Unicode' collation algorithm), random string generation, case mapping, string transliteration, concatenation, sorting, padding, wrapping, Unicode normalisation, date-time formatting and parsing, and many more. They are fast, consistent, convenient, and - thanks to 'ICU' (International Components for Unicode) - portable across all locales and platforms. Documentation about 'stringi' is provided via its website at <https://stringi.gagolewski.com/> and the paper by Gagolewski (2022, <doi:10.18637/jss.v103.i02>).",
       "URL": "https://stringi.gagolewski.com/, https://github.com/gagolews/stringi, https://icu.unicode.org/",
@@ -5635,10 +5635,10 @@
       "Biarch": "TRUE",
       "License": "file LICENSE",
       "Authors@R": "c(person(given = \"Marek\", family = \"Gagolewski\", role = c(\"aut\", \"cre\", \"cph\"), email = \"marek@gagolewski.com\", comment = c(ORCID = \"0000-0003-0637-6028\")), person(given = \"Bartek\", family = \"Tartanus\", role = \"ctb\"), person(\"Unicode, Inc. and others\", role=\"ctb\", comment = \"ICU4C source code, Unicode Character Database\") )",
-      "RoxygenNote": "7.3.2",
       "Encoding": "UTF-8",
+      "Config/roxygen2/version": "8.0.0",
       "NeedsCompilation": "yes",
-      "Author": "Marek Gagolewski [aut, cre, cph] (<https://orcid.org/0000-0003-0637-6028>), Bartek Tartanus [ctb], Unicode, Inc. and others [ctb] (ICU4C source code, Unicode Character Database)",
+      "Author": "Marek Gagolewski [aut, cre, cph] (ORCID: <https://orcid.org/0000-0003-0637-6028>), Bartek Tartanus [ctb], Unicode, Inc. and others [ctb] (ICU4C source code, Unicode Character Database)",
       "Maintainer": "Marek Gagolewski <marek@gagolewski.com>",
       "License_is_FOSS": "yes",
       "Repository": "CRAN"
@@ -5690,13 +5690,13 @@
     },
     "survival": {
       "Package": "survival",
-      "Version": "3.8-3",
+      "Version": "3.8-9",
       "Source": "Repository",
       "Title": "Survival Analysis",
       "Priority": "recommended",
-      "Date": "2024-12-17",
+      "Date": "2026-07-07",
       "Depends": [
-        "R (>= 3.5.0)"
+        "R (>= 4.1.0)"
       ],
       "Imports": [
         "graphics",
@@ -5709,13 +5709,13 @@
       "LazyData": "Yes",
       "LazyDataCompression": "xz",
       "ByteCompile": "Yes",
-      "Authors@R": "c(person(c(\"Terry\", \"M\"), \"Therneau\", email=\"therneau.terry@mayo.edu\", role=c(\"aut\", \"cre\")), person(\"Thomas\", \"Lumley\", role=c(\"ctb\", \"trl\"), comment=\"original S->R port and R maintainer until 2009\"), person(\"Atkinson\", \"Elizabeth\", role=\"ctb\"), person(\"Crowson\", \"Cynthia\", role=\"ctb\"))",
+      "Authors@R": "c(person(c(\"Terry\", \"M\"), \"Therneau\", email=\"terry.therneau@proton.me\", role=c(\"aut\", \"cre\")), person(\"Thomas\", \"Lumley\", role=c(\"ctb\", \"trl\"), comment=\"original S->R port and R maintainer until 2009\"), person(\"Atkinson\", \"Elizabeth\", role=\"ctb\"), person(\"Crowson\", \"Cynthia\", role=\"ctb\"))",
       "Description": "Contains the core survival analysis routines, including definition of Surv objects,  Kaplan-Meier and Aalen-Johansen (multi-state) curves, Cox models, and parametric accelerated failure time models.",
       "License": "LGPL (>= 2)",
       "URL": "https://github.com/therneau/survival",
       "NeedsCompilation": "yes",
       "Author": "Terry M Therneau [aut, cre], Thomas Lumley [ctb, trl] (original S->R port and R maintainer until 2009), Atkinson Elizabeth [ctb], Crowson Cynthia [ctb]",
-      "Maintainer": "Terry M Therneau <therneau.terry@mayo.edu>",
+      "Maintainer": "Terry M Therneau <terry.therneau@proton.me>",
       "Repository": "CRAN"
     },
     "sys": {
@@ -5834,11 +5834,11 @@
     },
     "terra": {
       "Package": "terra",
-      "Version": "1.7-78",
+      "Version": "1.8-93",
       "Source": "Repository",
       "Type": "Package",
       "Title": "Spatial Data Analysis",
-      "Date": "2026-06-18",
+      "Date": "2026-01-11",
       "Depends": [
         "R (>= 3.5.0)",
         "methods"
@@ -5848,13 +5848,10 @@
         "tinytest",
         "ncdf4",
         "sf (>= 0.9-8)",
-        "igraph",
         "deldir",
         "XML",
         "leaflet (>= 2.2.1)",
-        "htmlwidgets",
-        "future",
-        "future.apply"
+        "htmlwidgets"
       ],
       "LinkingTo": [
         "Rcpp"
@@ -5871,10 +5868,10 @@
       "URL": "https://rspatial.org/, https://rspatial.github.io/terra/",
       "BugReports": "https://github.com/rspatial/terra/issues",
       "LazyLoad": "yes",
-      "Authors@R": "c( person(\"Robert J.\", \"Hijmans\", role=c(\"cre\", \"aut\"),   email=\"r.hijmans@gmail.com\", comment=c(ORCID=\"0000-0001-5872-2872\")),\t\t\t person(\"Andrew\", \"Brown\", role=\"aut\", comment=c(ORCID=\"0000-0002-4565-533X\")), person(\"Márcia\", \"Barbosa\", role=\"aut\", comment=c(ORCID=\"0000-0001-8972-7713\")), person(\"Krzysztof\", \"Dyba\", role=\"ctb\", comment=c(ORCID=\"0000-0002-8614-3816\")), person(\"Roger\", \"Bivand\", role=\"ctb\", comment=c(ORCID=\"0000-0003-2392-6140\")), person(\"Michael\", \"Chirico\", role=\"ctb\", comment=c(ORCID=\"0000-0003-0787-087X\")), person(\"Emanuele\", \"Cordano\", role=\"ctb\",comment=c(ORCID=\"0000-0002-3508-5898\")), person(\"Edzer\", \"Pebesma\", role=\"ctb\", comment=c(ORCID=\"0000-0001-8049-7069\")), person(\"Barry\", \"Rowlingson\", role=\"ctb\", comment=c(ORCID=\"0000-0002-8586-6625\")), person(\"Michael D.\", \"Sumner\", role=\"ctb\", comment=c(ORCID=\"0000-0002-2471-7511\")))",
+      "Authors@R": "c( person(\"Robert J.\", \"Hijmans\", role=c(\"cre\", \"aut\"),   email=\"r.hijmans@gmail.com\", comment=c(ORCID=\"0000-0001-5872-2872\")),\t\t\t person(\"Márcia\", \"Barbosa\", role=\"ctb\", comment=c(ORCID=\"0000-0001-8972-7713\")), person(\"Roger\", \"Bivand\", role=\"ctb\", comment=c(ORCID=\"0000-0003-2392-6140\")), person(\"Andrew\", \"Brown\", role=\"ctb\", comment=c(ORCID=\"0000-0002-4565-533X\")), person(\"Michael\", \"Chirico\", role=\"ctb\", comment=c(ORCID=\"0000-0003-0787-087X\")), person(\"Emanuele\", \"Cordano\", role=\"ctb\",comment=c(ORCID=\"0000-0002-3508-5898\")), person(\"Krzysztof\", \"Dyba\", role=\"ctb\", comment=c(ORCID=\"0000-0002-8614-3816\")), person(\"Edzer\", \"Pebesma\", role=\"ctb\", comment=c(ORCID=\"0000-0001-8049-7069\")), person(\"Barry\", \"Rowlingson\", role=\"ctb\", comment=c(ORCID=\"0000-0002-8586-6625\")), person(\"Michael D.\", \"Sumner\", role=\"ctb\", comment=c(ORCID=\"0000-0002-2471-7511\")))",
       "NeedsCompilation": "yes",
-      "Author": "Robert J. Hijmans [cre, aut] (ORCID: <https://orcid.org/0000-0001-5872-2872>), Andrew Brown [aut] (ORCID: <https://orcid.org/0000-0002-4565-533X>), Márcia Barbosa [aut] (ORCID: <https://orcid.org/0000-0001-8972-7713>), Krzysztof Dyba [ctb] (ORCID: <https://orcid.org/0000-0002-8614-3816>), Roger Bivand [ctb] (ORCID: <https://orcid.org/0000-0003-2392-6140>), Michael Chirico [ctb] (ORCID: <https://orcid.org/0000-0003-0787-087X>), Emanuele Cordano [ctb] (ORCID: <https://orcid.org/0000-0002-3508-5898>), Edzer Pebesma [ctb] (ORCID: <https://orcid.org/0000-0001-8049-7069>), Barry Rowlingson [ctb] (ORCID: <https://orcid.org/0000-0002-8586-6625>), Michael D. Sumner [ctb] (ORCID: <https://orcid.org/0000-0002-2471-7511>)",
-      "Repository": "CRAN"
+      "Author": "Robert J. Hijmans [cre, aut] (ORCID: <https://orcid.org/0000-0001-5872-2872>), Márcia Barbosa [ctb] (ORCID: <https://orcid.org/0000-0001-8972-7713>), Roger Bivand [ctb] (ORCID: <https://orcid.org/0000-0003-2392-6140>), Andrew Brown [ctb] (ORCID: <https://orcid.org/0000-0002-4565-533X>), Michael Chirico [ctb] (ORCID: <https://orcid.org/0000-0003-0787-087X>), Emanuele Cordano [ctb] (ORCID: <https://orcid.org/0000-0002-3508-5898>), Krzysztof Dyba [ctb] (ORCID: <https://orcid.org/0000-0002-8614-3816>), Edzer Pebesma [ctb] (ORCID: <https://orcid.org/0000-0001-8049-7069>), Barry Rowlingson [ctb] (ORCID: <https://orcid.org/0000-0002-8586-6625>), Michael D. Sumner [ctb] (ORCID: <https://orcid.org/0000-0002-2471-7511>)",
+      "Repository": "RSPM"
     },
     "textshaping": {
       "Package": "textshaping",
@@ -6256,7 +6253,7 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.59",
+      "Version": "0.60",
       "Source": "Repository",
       "Type": "Package",
       "Title": "Helper Functions to Install and Maintain TeX Live, and Compile LaTeX Documents",
@@ -6837,7 +6834,7 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.58",
+      "Version": "0.60",
       "Source": "Repository",
       "Type": "Package",
       "Title": "Supporting Functions for Packages Maintained by 'Yihui Xie'",
