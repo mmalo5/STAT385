@@ -4,7 +4,7 @@ username: mmalo5
 account: mmalo5
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 17678206
-bundleId:
+appId: 17678250
+bundleId: 12380886
 url: https://mmalo5.shinyapps.io/final_shiny_app/
 version: 1
