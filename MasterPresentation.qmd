@@ -2,7 +2,7 @@
 title: "Chicago Marathon Analysis and the Impact of Weather on Performance"
 author: "Miles Maloney"
 institute: "STAT385"
-date: "August 2, 2026"
+date: "August 6, 2026"
 format: 
   revealjs: 
     theme: default
@@ -97,41 +97,42 @@ elite_slope <- elite_ci$estimate
 :::
 
 ## Personal Connection
+
 ::: incremental
-- I was born and raised in Chicago and have been avid runner for many years.
-- Have never run the marathon but have volunteered for it many times, volunteering at a water station.
+- I was born and raised in Chicago and have been an avid runner for many years.
+- I like to investigate how external factors impact performance.
+- I have never run the marathon but have volunteered for it many times, manning a water station.
 - The route takes the runners right past my former high school, the entire cross country team would gather to cheer on our coach as he ran.
 :::
-
 
 ## Research Questions
 
 ::: incremental
-- Does temperature impact the finish times of runners?
-- Is there a difference in performance due to weather conditions between the General Sample and Elite Runners?
-- Are casual runners or professional runners more sensative to weather changes?
-- Do humidity or precipitation impact perfomance more than temperature?
+- What weather element impacts runners the most on marathon days?
+- What groups of runners are impacted the most by weather on marathon days?
+- How much of an impact does weather have on finish times?
+- What are the ideal conditions for running the Chicago Marathon?
 :::
 
 # Data Description
 
 ## Data Source
 
-- The Marathon results were collected from a reliable public source as a CSV file. It contained results from all runners from 2000-2025, and had over 900,000 finishers.
-- The hourly weather data was collected from Open-Meteo APIs, which provides high-resolution data from national weather services.
+- The Marathon results were collected from Kaggle as a CSV file. It contained results from all runners from 2000-2025, and had over 900,000 finishers.
+- The hourly weather data was collected from Open-Meteo as CSV files, which had high-resolution data from national weather services.
 - Every year, the weather data was selected from the race window between 7am and 3pm. 7am was the earliest possible starting time, and 3pm was the latest possible finishing time.
 
 ## Variables
 
 - The dependent variable is finish time. It was collected in seconds, but I converted it to hours.
-- The independent variables are from the weather data, which are: Average Temperature (°F), Relative Humidity (%), and Total Precipitation (inches)
-- The categorical variables are gender, age group, runner quartile, and runner group (general sample, top 1% of finishers)
+- The independent variables are from the weather data, which are: Average Temperature (°F), Apparent Temperature (°F), Relative Humidity (%), and Total Precipitation (inches).
+- The categorical variables are gender, age group, finish time quartiles, general sample of all runners, and top 1% of finishers.
 
 ## Data Size
 
-- The raw data from race results was data from over 930,000 finishers across 25 years.\
-- I took a stratified random sample of 1000 random runners in each quartile from each year. This was to make sure that each sample had the same size and to ensure efficiency.
-- The top 1% of runners data from each year was collected and put in a different data set.
+- The raw data from race results included over 930,000 finishers across 25 years.\
+- I took a stratified random sample of 1,000 runners in each quartile from each year. This was to make sure that each sample had the same size and to ensure efficiency.
+- The top 1% of runners' data from each year was collected and put in a different data set.
 
 ## Data Limitations
 
@@ -145,15 +146,18 @@ elite_slope <- elite_ci$estimate
 
 - Filtered the data by the finishing time, so that all times were less than the Chicago Marathon time limit of 6 hours and 30 minutes (15-minute per mile pace).
 - Removed runners who did not finish the race.
-- Merged the hourly weather averages to the runner results based on `year`.
+- Merged the hourly weather averages to the runner results based on year and start time of different groups.
 
 ## Exploratory Analysis
 
 ::: incremental
-- The change in marathon course details over the years was very important, so I used geographic data and sf to map out the course.
-- I plotted the overall distribution of the marathon finishing times
-- The distribution of marathon times is a broad bell shape. There are clusters before the finishing times of 3 hours, 4 hours, and 5 hours due to common goals that runners share.\
+- The marathon route changes a little from year to year due to factors such as construction, traffic patterns, and other events happening at the same time. 
+- I wanted to see how significant the changes might be, so I used geographic data and GPX files to illustrate the route from the first year of the dataset and compare it to the last year of the dataset.
 :::
+
+## Exploratory Analysis
+- I plotted the overall distribution of the marathon finishing times.
+- The distribution of marathon times is a broad bell shape. There are clusters before the finishing times of 3 hours, 4 hours, and 5 hours due to common goals that runners share.\
 
 ## Marathon Finish Time Distribution
 
@@ -161,36 +165,33 @@ elite_slope <- elite_ci$estimate
 #| echo: false
 #| message: false
 #| fig-align: "center"
-#| fig-height: 4.5
-#| fig-width: 9
-ggplot(final_data, aes(x=finish_time_seconds/3600)) + 
-  geom_histogram(aes(y=after_stat(density)), bins=100, color = "gray", fill="lightgray") + 
+#| fig-height: 7.5
+#| fig-width: 10
+#| out-width: "100%"
+ggplot(final_data, aes(x=finish_time_seconds/3600)) +  
+  geom_histogram(aes(y=after_stat(density)), bins=100, color = "gray", fill="lightgray") +  
   geom_density(color ="blue", linewidth = 1) +
   labs(
     title = "Marathon Finish Times Distribution (2000-2025)",
     x = "Finishing Time (hours)",
     y = "Density"
-  ) + 
+  ) +  
   theme_minimal()
 ```
-::: incremental
+
+<div style="font-size: 75%;">
 - This marathon finishing time distribution density plot is moderately right skewed.
 - The majority of runners finish within a time range of 4 to 5 hours.
-- There is 1 large present bump which indicates a common finishing time goal of under 4 hours.
-:::
+- There is 1 large bump present which indicates a common finishing time goal of under 4 hours.
+</div>
 
+## Interactive Course Map Comparison (2000 and 2025)
 
-# Course Map Changes (2000 to 2025)
-
-
-<p style="margin-top: -5px; font-size: 16px; color: #555;">
-
-Interactive Chicago Marathon Course Map. Feel free to zoom in and select/unselect either year.
 
 ```{r}
 #| echo: false
 #| message: false
-leaflet(height = "450px", width = "100%") %>%
+leaflet(height = "420px", width = "100%") %>%
   addProviderTiles(providers$CartoDB.Positron) %>% 
   addPolylines(data = gpx_map_2000, color = "orange", weight = 5, opacity = 0.9, 
                label = "2000 Course", group = "2000 Course") %>%
@@ -201,16 +202,11 @@ leaflet(height = "450px", width = "100%") %>%
     options = layersControlOptions(collapsed = FALSE)
   )
 ```
-::: incremental
-- This marathon finishing time distribution density plot is moderately right skewed.
-- The majority of runners finish within a time range of 4 to 5 hours.
-- There is 1 large present bump which indicates a common finishing time goal among runners of under 4 hours.
-:::
 
 ## Statistical Methods
 
-- Used the linear regression model lm to find the relationship between weather factors and finishing times.
-- Used the broom package to calculate the slopes and R\^2 values.
+- I used the linear regression model lm to find the relationship between weather factors and finishing times.
+- I used the broom package to calculate the slopes and R\^2 values.
 
 ## Visualizations
 
@@ -323,6 +319,25 @@ final_data %>%
 
 ## Implications
 
+<div style="font-size: 50%;">
+::: incremental
+- **Apparent Temperature Superiority:** The apparent temperature explains a slightly higher proportion of finish time variance than the true temperature ($R^2 = 0.5284$ vs. $R^2 = 0.5023$). This supports the claim that environmental factors such as humidity and wind speed have an impact on physiological strain.
+- **Heat Vulnerability By Gender:** There is no significant difference in how heat impacts men and women ($p = 0.4876$). Although women have a baseline offset ($p = 0.0053$), the heat impacts men (average of 4.28 hours) and women (average of 4.70 hours) at the same rate per each 1°F increase in temperature.
+- **Weather Anomalies:** In 2007, there was a heat wave ($78^\circ\text{F}$–$88^\circ\text{F}$) which added an average of 24.5 to 27.5 minutes to the marathon finish times ($t = 34.778, p < 2.2 \times 10^{-16}$) compared to standard linear variance.
+:::
+</div>
+
 ## Recommendations
 
+::: incremental
+- **Assistance During Race:** There should be more stations available where runners can hydrate and cool off their bodies.
+- **Medical Help:** Ahead of the race using API forecasts, the race organizers should prepare accordingly for potential injuries and help that would be needed during the race in case of emergency.
+:::
+
 ## Future Work
+
+::: incremental
+- **Training:** A sample of the preparation and training each runner did ahead of the race would be valuable.\
+- **Splits:** Taking splits every mile or so would be beneficial to analyze how different groups respond to general fatigue. These splits could also factor in the weather conditions during different parts of the race.
+- Would it be beneficial to move the marathon to a different day of the year to make it more likely that the weather conditions are closer to the ideal race temperature?
+:::
